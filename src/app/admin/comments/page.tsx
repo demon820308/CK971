@@ -120,23 +120,23 @@ export default function AdminCommentsPage() {
         ))}
       </div>
 
-      {loading ? (
+      {loading || !data ? (
         <p className="text-gray-400">加载中...</p>
       ) : (
         <>
           {tab === "photo" && renderTable(
-            data!.photoComments as Comment[],
-            (item) => (item as typeof data.photoComments[0]).photo.caption ?? "（无标题）",
+            data.photoComments as Comment[],
+            (item) => (item as (typeof data.photoComments)[0]).photo.caption ?? "（无标题）",
             "photo"
           )}
           {tab === "message" && renderTable(
-            data!.messageReplies as Comment[],
-            (item) => (item as typeof data.messageReplies[0]).message.content,
+            data.messageReplies as Comment[],
+            (item) => (item as (typeof data.messageReplies)[0]).message.content,
             "message"
           )}
           {tab === "event" && renderTable(
-            data!.eventComments as Comment[],
-            (item) => (item as typeof data.eventComments[0]).event.title,
+            data.eventComments as Comment[],
+            (item) => (item as (typeof data.eventComments)[0]).event.title,
             "event"
           )}
         </>
