@@ -15,6 +15,31 @@ interface PhotoUploadModalProps {
 
 const RATIO = 4 / 3
 
+// Client-side compress image to fit Vercel's 4.5MB request limit
+function compressImage(file: File, maxW = 1200, quality = 0.8): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    const url = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      let w = img.naturalWidth
+      let h = img.naturalHeight
+      if (w > maxW) { h = Math.round(h * (maxW / w)); w = maxW }
+      const canvas = document.createElement("canvas")
+      canvas.width = w; canvas.height = h
+      const ctx = canvas.getContext("2d")
+      if (!ctx) { reject(new Error("canvas error")); return }
+      ctx.drawImage(img, 0, 0, w, h)
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob)
+        else reject(new Error("toBlob failed"))
+      }, "image/jpeg", quality)
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("load error")) }
+    img.src = url
+  })
+}
+
 export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModalProps) {
   const { mutate: globalMutate } = useSWRConfig()
 
@@ -53,7 +78,7 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
 
   const handleFile = useCallback((selectedFile: File) => {
     if (!selectedFile.type.startsWith("image/")) { setError("请选择图片文件"); return }
-    if (selectedFile.size > 10 * 1024 * 1024) { setError("文件大小不能超过 10MB"); return }
+    if (selectedFile.size > 8 * 1024 * 1024) { setError("文件大小不能超过 8MB"); return }
     setOriginalFile(selectedFile)
     setError("")
     const reader = new FileReader()
@@ -124,18 +149,33 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
     if (!originalFile || isUploading) return
     setIsUploading(true); setError("")
     try {
+      // Compress client-side to stay under Vercel's 4.5MB request limit
+      const compressedBlob = await compressImage(originalFile)
       const formData = new FormData()
-      formData.append("file", originalFile)
+      formData.append("file", new File([compressedBlob], originalFile.name, { type: "image/jpeg" }))
       if (caption.trim()) formData.append("caption", caption.trim())
       formData.append("cropX", String(posX))
       formData.append("cropY", String(posY))
       const res = await fetch("/api/photos", { method: "POST", body: formData })
-      if (!res.ok) throw new Error((await res.json()).error || "上传失败")
+      let errMsg = "上传失败"
+      if (!res.ok) {
+        const ct = res.headers.get("content-type") || ""
+        if (ct.includes("application/json")) {
+          const data = await res.json()
+          errMsg = data.error || errMsg
+        } else {
+          const text = await res.text()
+          errMsg = text || errMsg
+        }
+        throw new Error(errMsg)
+      }
       onSuccess?.(); onClose()
       globalMutate((key: string) => typeof key === "string" && key.startsWith("/api/photos"))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "上传失败")
-    } finally { setIsUploading(false) }
+    } catch (e: any) {
+      setError(e?.message || "上传失败")
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const reset = () => {
@@ -188,7 +228,7 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
                 >
                   <Upload className="mx-auto mb-3 text-amber-500" size={38} />
                   <p className="font-handwritten text-amber-700 text-lg mb-1">点击或拖拽上传</p>
-                  <p className="text-sm text-amber-500/70">支持 JPG、PNG、WebP，最大 10MB</p>
+                  <p className="text-sm text-amber-500/70">支持 JPG、PNG、WebP，最大 8MB</p>
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
                     onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }} />
                 </div>
