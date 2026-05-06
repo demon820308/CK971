@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-sticky-yellow: #FFF9C4;
+  --color-sticky-pink: #FCE4EC;
+  --color-sticky-blue: #E1F5FE;
+  --color-sticky-green: #E8F5E9;
+  --color-golden-hour: #F39C12;
+  --color-warm-amber: #E67E22;
+  --color-paper-white: #FFF8E7;
+  --color-sky-hero: #87CEEB;
+  --color-sunset-orange: #FF8C42;
+  --color-dark-warm: #2C1810;
+
+  --font-brush: var(--font-brush);
+  --font-handwritten: var(--font-handwritten);
+
+  --shadow-polaroid: 4px 4px 15px rgba(0,0,0,0.3);
+  --shadow-sticky: 2px 5px 10px rgba(0,0,0,0.15);
+  --shadow-tape: 1px 2px 4px rgba(0,0,0,0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Paper grain overlay */
+.paper-grain::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Scrapbook background gradient - warm amber/golden corkboard tones */
+.scrapbook-bg {
+  background: linear-gradient(to bottom,
+    #E8C97A 0%,
+    #D4A850 15%,
+    #C89640 35%,
+    #D4AD60 55%,
+    #DDB870 75%,
+    #C8974A 100%
+  );
+}
+
+/* Sticky note folded corner */
+.sticky-fold::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 0 20px 20px;
+  border-color: transparent transparent rgba(0,0,0,0.1) transparent;
+}
+
+/* Masking tape strip */
+.tape-strip {
+  position: absolute;
+  width: 80px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.4);
+  mix-blend-mode: multiply;
+  transform: rotate(-15deg);
+  z-index: 10;
+}
+
+/* Vintage photo filter */
+.vintage-filter {
+  filter: saturate(0.85) contrast(1.05) sepia(0.08) brightness(1.02);
+}
+
+/* Handwritten font helper */
+.font-handwritten {
+  font-family: var(--font-handwritten), cursive;
+}
+
+/* Brush font helper */
+.font-brush {
+  font-family: var(--font-brush), serif;
+}
+
+/* Torn paper edge */
+.torn-edge {
+  clip-path: polygon(
+    0% 4%, 3% 0%, 7% 3%, 11% 1%, 15% 4%, 19% 0%, 23% 3%, 27% 1%,
+    31% 4%, 35% 0%, 39% 3%, 43% 1%, 47% 4%, 51% 0%, 55% 3%, 59% 1%,
+    63% 4%, 67% 0%, 71% 3%, 75% 1%, 79% 4%, 83% 0%, 87% 3%, 91% 1%,
+    95% 4%, 100% 0%, 100% 96%, 97% 100%, 93% 97%, 89% 99%, 85% 96%,
+    81% 100%, 77% 97%, 73% 99%, 69% 96%, 65% 100%, 61% 97%, 57% 99%,
+    53% 96%, 49% 100%, 45% 97%, 41% 99%, 37% 96%, 33% 100%, 29% 97%,
+    25% 99%, 21% 96%, 17% 100%, 13% 97%, 9% 99%, 5% 96%, 0% 100%
+  );
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  /* Dark wood-grain fallback so content below the image blends seamlessly */
+  background: #3a2518;
+}
+
+/* Selection color */
+::selection {
+  background: rgba(243, 156, 18, 0.3);
 }

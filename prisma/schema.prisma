@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Users and Auth ---
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  avatar    String?
+  bio       String?
+  role      Role     @default(MEMBER)
+  banned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberships    ClassMember[]
+  photos         Photo[]
+  photoLikes     PhotoLike[]
+  photoComments  PhotoComment[]
+  messages       Message[]
+  messageLikes   MessageLike[]
+  messageReplies MessageReply[]
+  events           Event[]
+  eventComments    EventComment[]
+  eventAttendances EventAttendee[]
+
+  @@map("users")
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// --- Class ---
+
+model Class {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  inviteCode  String   @unique
+  gradeYear   Int?
+  endYear     Int?
+  schoolName  String?
+  coverImage  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members ClassMember[]
+
+  @@map("classes")
+}
+
+model ClassMember {
+  id       String   @id @default(cuid())
+  userId   String
+  classId  String
+  joinedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, classId])
+  @@map("class_members")
+}
+
+// --- Photos ---
+
+model Photo {
+  id         String   @id @default(cuid())
+  url        String
+  caption    String?
+  takenAt    DateTime?
+  uploadedAt DateTime @default(now())
+  uploaderId String
+  classId    String
+  rotation   Float    @default(0)
+  zIndex     Int      @default(0)
+  cropX      Float    @default(50)
+  cropY      Float    @default(50)
+
+  uploader User           @relation(fields: [uploaderId], references: [id])
+  likes    PhotoLike[]
+  comments PhotoComment[]
+
+  @@index([classId, uploadedAt])
+  @@map("photos")
+}
+
+model PhotoLike {
+  id        String   @id @default(cuid())
+  userId    String
+  photoId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, photoId])
+  @@map("photo_likes")
+}
+
+model PhotoComment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  photoId   String
+  parentId  String?
+  createdAt DateTime @default(now())
+
+  user    User           @relation(fields: [userId], references: [id])
+  photo   Photo          @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  parent  PhotoComment?  @relation("PhotoReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies PhotoComment[] @relation("PhotoReplies")
+
+  @@index([photoId, createdAt])
+  @@map("photo_comments")
+}
+
+// --- Messages (Sticky Notes) ---
+
+model Message {
+  id        String      @id @default(cuid())
+  content   String
+  color     StickyColor @default(YELLOW)
+  authorId  String
+  classId   String
+  createdAt DateTime    @default(now())
+  rotation  Float       @default(0)
+  posX      Float?
+  posY      Float?
+
+  author  User           @relation(fields: [authorId], references: [id])
+  likes   MessageLike[]
+  replies MessageReply[]
+
+  @@index([classId, createdAt])
+  @@map("messages")
+}
+
+enum StickyColor {
+  YELLOW
+  PINK
+  BLUE
+  GREEN
+}
+
+model MessageLike {
+  id        String   @id @default(cuid())
+  userId    String
+  messageId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, messageId])
+  @@map("message_likes")
+}
+
+model MessageReply {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  messageId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId, createdAt])
+  @@map("message_replies")
+}
+
+// --- Events (Activities) ---
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  location    String?
+  eventTime   DateTime
+  coverImage  String?
+  creatorId   String
+  classId     String
+  createdAt   DateTime  @default(now())
+
+  creator   User            @relation(fields: [creatorId], references: [id])
+  comments  EventComment[]
+  attendees EventAttendee[]
+
+  @@index([classId, eventTime])
+  @@map("events")
+}
+
+model EventAttendee {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, eventId])
+  @@map("event_attendees")
+}
+
+model EventComment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  eventId   String
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@map("event_comments")
+}

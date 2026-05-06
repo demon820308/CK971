@@ -1,0 +1,5 @@
+export { PolaroidPhoto } from "./PolaroidPhoto"
+export { StickyNote } from "./StickyNote"
+export { Doodle } from "./Doodle"
+export { MaskingTape } from "./MaskingTape"
+export { Pushpin } from "./Pushpin"

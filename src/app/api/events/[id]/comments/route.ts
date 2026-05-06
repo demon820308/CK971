@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+
+  const comments = await prisma.eventComment.findMany({
+    where: { eventId: id },
+    orderBy: { createdAt: "asc" },
+    include: {
+      user: { select: { id: true, name: true, avatar: true } },
+    },
+  })
+
+  return NextResponse.json(comments)
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "请先登录" }, { status: 401 })
+  }
+
+  const { content } = await request.json()
+  if (!content?.trim()) {
+    return NextResponse.json({ error: "评论内容不能为空" }, { status: 400 })
+  }
+
+  const comment = await prisma.eventComment.create({
+    data: {
+      content: content.trim(),
+      userId: session.user.id,
+      eventId: id,
+    },
+    include: {
+      user: { select: { id: true, name: true, avatar: true } },
+    },
+  })
+
+  return NextResponse.json(comment)
+}
