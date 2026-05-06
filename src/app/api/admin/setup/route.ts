@@ -24,6 +24,22 @@ export async function POST(request: Request) {
     if (!email || !name || !password) {
       return NextResponse.json({ error: "请填写完整信息" }, { status: 400 })
     }
+
+    let anyClass = await prisma.class.findFirst()
+
+    if (!anyClass) {
+      // Auto-create default class if database is empty
+      anyClass = await prisma.class.create({
+        data: {
+          name: "财会971班",
+          description: "我们的青春记忆",
+          inviteCode: "CK971-1997",
+          gradeYear: 1997,
+          schoolName: "厦门商业学校",
+        },
+      })
+    }
+
     if (password.length < 8) {
       return NextResponse.json({ error: "密码至少8位" }, { status: 400 })
     }
