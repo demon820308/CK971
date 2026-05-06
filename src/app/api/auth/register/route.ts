@@ -15,16 +15,30 @@ export async function POST(request: Request) {
       )
     }
 
-    // Find class by invite code
-    const targetClass = await prisma.class.findUnique({
+    // Find class by invite code, auto-create default class if none exists
+    let targetClass = await prisma.class.findUnique({
       where: { inviteCode },
     })
 
     if (!targetClass) {
-      return NextResponse.json(
-        { error: "邀请码无效" },
-        { status: 400 }
-      )
+      // If database is empty, auto-create default class
+      const anyClass = await prisma.class.findFirst()
+      if (!anyClass) {
+        targetClass = await prisma.class.create({
+          data: {
+            name: "财会971班",
+            description: "我们的青春记忆",
+            inviteCode: "CK971-1997",
+            gradeYear: 1997,
+            schoolName: "厦门商业学校",
+          },
+        })
+      } else {
+        return NextResponse.json(
+          { error: "邀请码无效" },
+          { status: 400 }
+        )
+      }
     }
 
     // Check if email already exists
