@@ -126,18 +126,18 @@ export default function AdminCommentsPage() {
       ) : (
         <>
           {tab === "photo" && renderTable(
-            data!.photoComments as Comment[],
-            (item) => (item as (typeof data!.photoComments)[0]).photo.caption ?? "（无标题）",
+            data.photoComments as Comment[],
+            (item) => ((item as unknown) as { photo: { caption: string | null } }).photo.caption ?? "（无标题）",
             "photo"
           )}
           {tab === "message" && renderTable(
-            data!.messageReplies as Comment[],
-            (item) => (item as (typeof data!.messageReplies)[0]).message.content,
+            data.messageReplies as Comment[],
+            (item) => ((item as unknown) as { message: { content: string } }).message.content,
             "message"
           )}
           {tab === "event" && renderTable(
-            data!.eventComments as Comment[],
-            (item) => (item as (typeof data!.eventComments)[0]).event.title,
+            data.eventComments as Comment[],
+            (item) => ((item as unknown) as { event: { title: string } }).event.title,
             "event"
           )}
         </>
