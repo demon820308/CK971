@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
+import { usePathname, useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { signOut, useSession } from "next-auth/react"
 import { LayoutDashboard, Users, Image, MessageSquare, Calendar, LogOut, ShieldCheck, MessageCircle, Settings } from "lucide-react"
 
 const navItems = [
@@ -17,6 +18,24 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
+  const { data: session, status } = useSession()
+
+  useEffect(() => {
+    if (status === "loading") return
+    const role = (session?.user as { role?: string })?.role
+    if (!session || (role !== "ADMIN" && role !== "SUPER_ADMIN")) {
+      router.replace("/login")
+    }
+  }, [session, status, router])
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-400">
+        加载中...
+      </div>
+    )
+  }
 
   if (pathname === "/admin/setup") return <>{children}</>
 
