@@ -21,6 +21,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
   const { data: session, status } = useSession()
 
+  if (pathname === "/admin/setup") return <>{children}</>
+
   useEffect(() => {
     if (status === "loading") return
     const role = (session?.user as { role?: string })?.role
@@ -36,8 +38,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     )
   }
-
-  if (pathname === "/admin/setup") return <>{children}</>
 
   return (
     <div className="min-h-screen bg-gray-950 flex">
