@@ -5,18 +5,6 @@ export const authConfig: NextAuthConfig = {
   providers: [],
   session: { strategy: "jwt" },
   callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const pathname = nextUrl.pathname
-      const role = (auth?.user as unknown as { role?: string })?.role
-
-      if (pathname.startsWith("/admin")) {
-        if (pathname === "/admin/setup") return true
-        if (role !== "SUPER_ADMIN") {
-          return Response.redirect(new URL("/", nextUrl))
-        }
-      }
-      return true
-    },
     jwt({ token, user }) {
       if (user) {
         token.id = user.id
