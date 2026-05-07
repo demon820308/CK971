@@ -120,7 +120,7 @@ export default function AdminCommentsPage() {
         ))}
       </div>
 
-      {/* Force rebuild */}
+      {/* Netlify rebuild trigger */}
       {loading || !data ? (
         <p className="text-gray-400">加载中...</p>
       ) : (
