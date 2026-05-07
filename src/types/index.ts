@@ -65,6 +65,7 @@ export interface MessageReply {
   content: string
   createdAt: string
   user: Pick<User, "id" | "name" | "avatar">
+  replies?: MessageReply[]
 }
 
 export interface Event {
@@ -86,6 +87,7 @@ export interface EventComment {
   content: string
   createdAt: string
   user: Pick<User, "id" | "name" | "avatar">
+  replies?: EventComment[]
 }
 
 export interface PaginatedResponse<T> {

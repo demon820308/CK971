@@ -38,6 +38,8 @@ export function MessageDetailModal({
   const [likeCount, setLikeCount] = useState(0)
   const [isLiking, setIsLiking] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [nestedReplyText, setNestedReplyText] = useState("")
 
   useEffect(() => {
     if (!message) return
@@ -67,20 +69,27 @@ export function MessageDetailModal({
     }
   }
 
-  const handleSubmit = async () => {
-    if (!message || !newReply.trim() || isSubmitting) return
+  const handleSubmit = async (parentId?: string) => {
+    if (!message || isSubmitting) return
+    const text = parentId ? nestedReplyText : newReply
+    if (!text.trim()) return
     setIsSubmitting(true)
     try {
       if (onReply) {
-        await onReply(message.id, newReply.trim())
+        await onReply(message.id, text.trim())
       } else {
         await fetch(`/api/messages/${message.id}/replies`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: newReply.trim() }),
+          body: JSON.stringify({ content: text.trim(), parentId: parentId || null }),
         })
       }
-      setNewReply("")
+      if (parentId) {
+        setNestedReplyText("")
+        setReplyingTo(null)
+      } else {
+        setNewReply("")
+      }
       const list = await fetch(`/api/messages/${message.id}/replies`).then((r) =>
         r.json()
       )
@@ -110,6 +119,54 @@ export function MessageDetailModal({
   if (typeof document === "undefined") return null
 
   const canDelete = currentUserId && message.author?.id === currentUserId
+
+  const renderReply = (reply: MessageReply, depth = 0) => (
+    <div key={reply.id} className={depth > 0 ? "ml-6 border-l-2 border-amber-100 pl-3" : ""}>
+      <div className="flex gap-3">
+        <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
+          {reply.user.name[0]}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-amber-800 text-sm">{reply.user.name}</span>
+            <span className="text-xs text-gray-400">{new Date(reply.createdAt).toLocaleDateString("zh-CN")}</span>
+          </div>
+          <p className="text-amber-900 text-sm mt-0.5">{reply.content}</p>
+          <button
+            onClick={() => setReplyingTo(replyingTo === reply.id ? null : reply.id)}
+            className="text-xs text-amber-600 hover:text-amber-800 mt-1"
+          >
+            {replyingTo === reply.id ? "取消" : "回复"}
+          </button>
+          {replyingTo === reply.id && (
+            <div className="flex gap-2 mt-2">
+              <input
+                type="text"
+                value={nestedReplyText}
+                onChange={(e) => setNestedReplyText(e.target.value)}
+                placeholder={`回复 ${reply.user.name}...`}
+                className="flex-1 px-3 py-1.5 border border-amber-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
+                maxLength={200}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit(reply.id)}
+              />
+              <button
+                onClick={() => handleSubmit(reply.id)}
+                disabled={!nestedReplyText.trim() || isSubmitting}
+                className="px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+              >
+                <Send size={14} />
+              </button>
+            </div>
+          )}
+          {reply.replies && reply.replies.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {reply.replies.map((r) => renderReply(r, depth + 1))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   return createPortal(
     <AnimatePresence>
@@ -196,26 +253,7 @@ export function MessageDetailModal({
                 还没有回复
               </p>
             )}
-            {replies.map((reply) => (
-              <div key={reply.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
-                  {reply.user.name[0]}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-amber-800 text-sm">
-                      {reply.user.name}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {new Date(reply.createdAt).toLocaleDateString("zh-CN")}
-                    </span>
-                  </div>
-                  <p className="text-amber-900 text-sm mt-0.5">
-                    {reply.content}
-                  </p>
-                </div>
-              </div>
-            ))}
+            {replies.map((reply) => renderReply(reply))}
           </div>
 
           {/* Reply input */}
@@ -230,7 +268,7 @@ export function MessageDetailModal({
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
             <button
-              onClick={handleSubmit}
+              onClick={() => handleSubmit()}
               disabled={!newReply.trim() || isSubmitting}
               className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
             >

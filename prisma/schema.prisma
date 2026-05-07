@@ -172,10 +172,13 @@ model MessageReply {
   content   String
   userId    String
   messageId String
+  parentId  String?
   createdAt DateTime @default(now())
 
-  user    User    @relation(fields: [userId], references: [id])
-  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id])
+  message Message       @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  parent  MessageReply? @relation("MessageReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies MessageReply[] @relation("MessageReplies")
 
   @@index([messageId, createdAt])
   @@map("message_replies")
@@ -220,10 +223,13 @@ model EventComment {
   content   String
   userId    String
   eventId   String
+  parentId  String?
   createdAt DateTime @default(now())
 
-  user  User  @relation(fields: [userId], references: [id])
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id])
+  event   Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  parent  EventComment? @relation("EventReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies EventComment[] @relation("EventReplies")
 
   @@index([eventId, createdAt])
   @@map("event_comments")

@@ -26,6 +26,8 @@ export function EventDetailModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [replyingTo, setReplyingTo] = useState<string | null>(null)
+  const [nestedReplyText, setNestedReplyText] = useState("")
   const [attending, setAttending] = useState(false)
   const [attendeeCount, setAttendeeCount] = useState(0)
   const [isRsvping, setIsRsvping] = useState(false)
@@ -74,17 +76,24 @@ export function EventDetailModal({
     }
   }
 
-  const handleSubmit = async () => {
-    if (!event || !newComment.trim() || isSubmitting) return
+  const handleSubmit = async (parentId?: string) => {
+    if (!event || isSubmitting) return
+    const text = parentId ? nestedReplyText : newComment
+    if (!text.trim()) return
     setIsSubmitting(true)
     try {
       const res = await fetch(`/api/events/${event.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: newComment.trim() }),
+        body: JSON.stringify({ content: text.trim(), parentId: parentId || null }),
       })
       if (res.ok) {
-        setNewComment("")
+        if (parentId) {
+          setNestedReplyText("")
+          setReplyingTo(null)
+        } else {
+          setNewComment("")
+        }
         const list = await fetch(`/api/events/${event.id}/comments`).then((r) => r.json())
         setComments(Array.isArray(list) ? list : [])
       }
@@ -113,6 +122,54 @@ export function EventDetailModal({
   if (typeof document === "undefined") return null
 
   const canDelete = currentUserId && event.creator?.id === currentUserId
+
+  const renderComment = (comment: EventComment, depth = 0) => (
+    <div key={comment.id} className={depth > 0 ? "ml-6 border-l-2 border-amber-100 pl-3" : ""}>
+      <div className="flex gap-3">
+        <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
+          {comment.user.name[0]}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-amber-800 text-sm">{comment.user.name}</span>
+            <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString("zh-CN")}</span>
+          </div>
+          <p className="text-amber-900 text-sm mt-0.5">{comment.content}</p>
+          <button
+            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+            className="text-xs text-amber-600 hover:text-amber-800 mt-1"
+          >
+            {replyingTo === comment.id ? "取消" : "回复"}
+          </button>
+          {replyingTo === comment.id && (
+            <div className="flex gap-2 mt-2">
+              <input
+                type="text"
+                value={nestedReplyText}
+                onChange={(e) => setNestedReplyText(e.target.value)}
+                placeholder={`回复 ${comment.user.name}...`}
+                className="flex-1 px-3 py-1.5 border border-amber-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
+                maxLength={200}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit(comment.id)}
+              />
+              <button
+                onClick={() => handleSubmit(comment.id)}
+                disabled={!nestedReplyText.trim() || isSubmitting}
+                className="px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+              >
+                <Send size={14} />
+              </button>
+            </div>
+          )}
+          {comment.replies && comment.replies.length > 0 && (
+            <div className="mt-2 space-y-2">
+              {comment.replies.map((r) => renderComment(r, depth + 1))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 
   return createPortal(
     <AnimatePresence>
@@ -252,26 +309,7 @@ export function EventDetailModal({
                 还没有评论，说点什么吧
               </p>
             )}
-            {comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
-                  {comment.user.name[0]}
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-amber-800 text-sm">
-                      {comment.user.name}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {new Date(comment.createdAt).toLocaleDateString("zh-CN")}
-                    </span>
-                  </div>
-                  <p className="text-amber-900 text-sm mt-0.5">
-                    {comment.content}
-                  </p>
-                </div>
-              </div>
-            ))}
+            {comments.map((comment) => renderComment(comment))}
           </div>
 
           {/* Comment input */}
@@ -286,7 +324,7 @@ export function EventDetailModal({
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
             <button
-              onClick={handleSubmit}
+              onClick={() => handleSubmit()}
               disabled={!newComment.trim() || isSubmitting}
               className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
             >
