@@ -317,8 +317,8 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
           message={selectedMessage}
           onClose={() => setSelectedMessage(null)}
           onLike={toggleLike}
-          onReply={async (id, content) => {
-            await addReply(id, content)
+          onReply={async (id, content, parentId) => {
+            await addReply(id, content, parentId)
           }}
           onDelete={handleDeleteMessage}
           currentUserId={session?.user?.id}

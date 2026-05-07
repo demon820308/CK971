@@ -16,14 +16,20 @@ import type { Event } from "@/types"
 interface ActivityRecordsProps {
   composeOpen?: boolean
   onCloseCompose?: () => void
+  limit?: number
+  maxPages?: number
 }
 
 export function ActivityRecords({
   composeOpen = false,
   onCloseCompose,
+  limit,
+  maxPages,
 }: ActivityRecordsProps) {
   const pathname = usePathname()
-  const { events, mutate, loadMore, isLoadingMore, isReachingEnd, toggleRsvp } = useEvents()
+  const { events, mutate, loadMore, isLoadingMore, isReachingEnd, toggleRsvp } = useEvents(
+    limit || maxPages ? { limit, maxPages } : {}
+  )
   const { data: session } = useSession()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
@@ -81,7 +87,7 @@ export function ActivityRecords({
 
       <div className="max-w-3xl mx-auto flex items-center mb-10">
         <motion.div
-          className="flex items-center gap-3"
+          className="flex w-full items-center gap-3"
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}

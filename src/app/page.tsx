@@ -90,6 +90,8 @@ export default function HomePage() {
           <ActivityRecords
             composeOpen={showEventModal}
             onCloseCompose={() => setShowEventModal(false)}
+            limit={3}
+            maxPages={1}
           />
           <TimelineEnding startYear={classInfo?.gradeYear} endYear={classInfo?.endYear} />
 

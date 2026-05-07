@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Send, Calendar, MapPin, Trash2, Users, CheckCircle2 } from "lucide-react"
+import { toast } from "@/lib/toast"
 import type { Event, EventComment, User } from "@/types"
 
 interface EventDetailModalProps {
@@ -12,6 +13,36 @@ interface EventDetailModalProps {
   onDelete?: (eventId: string) => Promise<void>
   onRsvp?: (eventId: string) => Promise<void>
   currentUserId?: string
+}
+
+async function readJsonArray<T>(res: Response, label: string): Promise<T[]> {
+  const text = await res.text()
+  if (!res.ok || !text.trim()) {
+    if (!res.ok) {
+      console.error(`Failed to load ${label}`, res.status, text)
+    }
+    return []
+  }
+
+  try {
+    const data = JSON.parse(text)
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error(`Invalid ${label} response`, error, text)
+    return []
+  }
+}
+
+async function readJsonObject(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text()
+  if (!text.trim()) return {}
+
+  try {
+    const data = JSON.parse(text)
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {}
+  } catch {
+    return {}
+  }
 }
 
 export function EventDetailModal({
@@ -50,8 +81,8 @@ export function EventDetailModal({
     setShowAttendees(false)
     setIsLoading(true)
     fetch(`/api/events/${event.id}/comments`)
-      .then((res) => res.json())
-      .then((data) => setComments(Array.isArray(data) ? data : []))
+      .then((res) => readJsonArray<EventComment>(res, "event comments"))
+      .then(setComments)
       .finally(() => setIsLoading(false))
   }, [event])
 
@@ -78,6 +109,10 @@ export function EventDetailModal({
 
   const handleSubmit = async (parentId?: string) => {
     if (!event || isSubmitting) return
+    if (!currentUserId) {
+      toast.error("请先登录")
+      return
+    }
     const text = parentId ? nestedReplyText : newComment
     if (!text.trim()) return
     setIsSubmitting(true)
@@ -87,16 +122,25 @@ export function EventDetailModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content: text.trim(), parentId: parentId || null }),
       })
-      if (res.ok) {
-        if (parentId) {
-          setNestedReplyText("")
-          setReplyingTo(null)
-        } else {
-          setNewComment("")
-        }
-        const list = await fetch(`/api/events/${event.id}/comments`).then((r) => r.json())
-        setComments(Array.isArray(list) ? list : [])
+      if (!res.ok) {
+        const data = await readJsonObject(res)
+        toast.error(String(data.error || "评论失败，请稍后再试"))
+        return
       }
+
+      if (parentId) {
+        setNestedReplyText("")
+        setReplyingTo(null)
+      } else {
+        setNewComment("")
+      }
+      const list = await fetch(`/api/events/${event.id}/comments`).then((r) =>
+        readJsonArray<EventComment>(r, "event comments")
+      )
+      setComments(list)
+      toast.success(parentId ? "回复已发布" : "评论已发布")
+    } catch {
+      toast.error("网络错误，请重试")
     } finally {
       setIsSubmitting(false)
     }
@@ -123,6 +167,11 @@ export function EventDetailModal({
 
   const canDelete = currentUserId && event.creator?.id === currentUserId
 
+  const commentTotal = comments.reduce(
+    (total, comment) => total + 1 + (comment.replies?.length ?? 0),
+    0
+  )
+
   const renderComment = (comment: EventComment) => (
     <div key={comment.id} className="space-y-2">
       <div className="flex gap-3">
@@ -148,13 +197,14 @@ export function EventDetailModal({
                 value={nestedReplyText}
                 onChange={(e) => setNestedReplyText(e.target.value)}
                 placeholder={`回复 ${comment.user.name}...`}
+                disabled={!currentUserId || isSubmitting}
                 className="flex-1 px-3 py-1.5 border border-amber-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
                 maxLength={200}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit(comment.id)}
               />
               <button
                 onClick={() => handleSubmit(comment.id)}
-                disabled={!nestedReplyText.trim() || isSubmitting}
+                disabled={!nestedReplyText.trim() || isSubmitting || !currentUserId}
                 className="px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
               >
                 <Send size={14} />
@@ -312,7 +362,7 @@ export function EventDetailModal({
           {/* Comments */}
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
             <p className="text-sm text-amber-700 font-medium">
-              评论 ({comments.length})
+              评论 ({commentTotal})
             </p>
             {isLoading && (
               <p className="text-center text-gray-400 py-4">加载中...</p>
@@ -331,14 +381,15 @@ export function EventDetailModal({
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="写条评论..."
+              placeholder={currentUserId ? "写条评论..." : "请先登录后评论"}
+              disabled={!currentUserId || isSubmitting}
               className="flex-1 px-4 py-2 border border-amber-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
               maxLength={500}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
             <button
               onClick={() => handleSubmit()}
-              disabled={!newComment.trim() || isSubmitting}
+              disabled={!newComment.trim() || isSubmitting || !currentUserId}
               className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
             >
               <Send size={16} />

@@ -10,7 +10,7 @@ interface MessageDetailModalProps {
   message: Message | null
   onClose: () => void
   onLike?: (id: string) => Promise<void>
-  onReply?: (id: string, content: string) => Promise<void>
+  onReply?: (id: string, content: string, parentId?: string) => Promise<void>
   onDelete?: (id: string) => Promise<void>
   currentUserId?: string
 }
@@ -20,6 +20,24 @@ const stickyBg: Record<StickyColor, string> = {
   PINK: "bg-sticky-pink",
   BLUE: "bg-sticky-blue",
   GREEN: "bg-sticky-green",
+}
+
+async function readJsonArray<T>(res: Response): Promise<T[]> {
+  const text = await res.text()
+  if (!res.ok || !text.trim()) {
+    if (!res.ok) {
+      console.error("Failed to load message replies", res.status, text)
+    }
+    return []
+  }
+
+  try {
+    const data = JSON.parse(text)
+    return Array.isArray(data) ? data : []
+  } catch (error) {
+    console.error("Invalid message replies response", error, text)
+    return []
+  }
 }
 
 export function MessageDetailModal({
@@ -47,8 +65,8 @@ export function MessageDetailModal({
     setLikeCount(message.likeCount)
     setIsLoading(true)
     fetch(`/api/messages/${message.id}/replies`)
-      .then((res) => res.json())
-      .then((data) => setReplies(Array.isArray(data) ? data : []))
+      .then((res) => readJsonArray<MessageReply>(res))
+      .then(setReplies)
       .finally(() => setIsLoading(false))
   }, [message])
 
@@ -76,7 +94,7 @@ export function MessageDetailModal({
     setIsSubmitting(true)
     try {
       if (onReply) {
-        await onReply(message.id, text.trim())
+        await onReply(message.id, text.trim(), parentId)
       } else {
         await fetch(`/api/messages/${message.id}/replies`, {
           method: "POST",
@@ -91,9 +109,9 @@ export function MessageDetailModal({
         setNewReply("")
       }
       const list = await fetch(`/api/messages/${message.id}/replies`).then((r) =>
-        r.json()
+        readJsonArray<MessageReply>(r)
       )
-      setReplies(Array.isArray(list) ? list : [])
+      setReplies(list)
     } finally {
       setIsSubmitting(false)
     }
@@ -119,6 +137,11 @@ export function MessageDetailModal({
   if (typeof document === "undefined") return null
 
   const canDelete = currentUserId && message.author?.id === currentUserId
+
+  const replyTotal = replies.reduce(
+    (total, reply) => total + 1 + (reply.replies?.length ?? 0),
+    0
+  )
 
   const renderReply = (reply: MessageReply) => (
     <div key={reply.id} className="space-y-2">
@@ -256,7 +279,7 @@ export function MessageDetailModal({
           {/* Replies */}
           <div className="flex-1 overflow-y-auto px-4 pb-3 border-t pt-3 space-y-3">
             <p className="text-sm text-amber-700 font-medium">
-              回复 ({replies.length})
+              回复 ({replyTotal})
             </p>
             {isLoading && (
               <p className="text-center text-gray-400 py-4">加载中...</p>

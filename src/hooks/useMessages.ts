@@ -52,11 +52,11 @@ export function useMessages(options: UseMessagesOptions = {}) {
     revalidate()
   }
 
-  const addReply = async (messageId: string, content: string) => {
+  const addReply = async (messageId: string, content: string, parentId?: string) => {
     const res = await fetch(`/api/messages/${messageId}/replies`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, parentId }),
     })
     if (res.status === 401) {
       toast.error("请先登录")

@@ -6,7 +6,13 @@ import type { Event, PaginatedResponse } from "@/types"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-export function useEvents() {
+interface UseEventsOptions {
+  limit?: number
+  maxPages?: number
+}
+
+export function useEvents(options: UseEventsOptions = {}) {
+  const { limit = 10, maxPages } = options
   const {
     data,
     error,
@@ -16,9 +22,10 @@ export function useEvents() {
     mutate,
   } = useSWRInfinite<PaginatedResponse<Event>>(
     (index, previousPageData) => {
+      if (maxPages && index >= maxPages) return null
       if (previousPageData && !previousPageData.hasMore) return null
-      if (index === 0) return "/api/events?limit=10"
-      return `/api/events?cursor=${previousPageData.nextCursor}&limit=10`
+      if (index === 0) return `/api/events?limit=${limit}`
+      return `/api/events?cursor=${previousPageData.nextCursor}&limit=${limit}`
     },
     fetcher,
     { revalidateFirstPage: false }
@@ -27,7 +34,10 @@ export function useEvents() {
   const events = data ? data.flatMap((page) => page.items) : []
   const isLoadingMore = isValidating && data && typeof data[size - 1] === "undefined"
   const isEmpty = data?.[0]?.items.length === 0
-  const isReachingEnd = isEmpty || (data && !data[data.length - 1]?.hasMore)
+  const isReachingEnd =
+    isEmpty ||
+    (maxPages ? size >= maxPages : false) ||
+    (data && !data[data.length - 1]?.hasMore)
 
   const revalidate = () => mutate()
 

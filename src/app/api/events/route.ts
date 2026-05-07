@@ -31,7 +31,8 @@ async function getEvents(
     where: { classId },
     take: limit + 1,
     cursor: cursor ? { id: cursor } : undefined,
-    orderBy: { eventTime: "desc" },
+    skip: cursor ? 1 : 0,
+    orderBy: [{ eventTime: "desc" }, { id: "desc" }],
     include: {
       creator: { select: { id: true, name: true, avatar: true } },
       _count: { select: { comments: true, attendees: true } },
@@ -66,7 +67,7 @@ async function getEvents(
 
   return NextResponse.json({
     items,
-    nextCursor: hasMore ? events[limit].id : null,
+    nextCursor: hasMore ? sliced[sliced.length - 1]?.id ?? null : null,
     hasMore,
   })
 }
