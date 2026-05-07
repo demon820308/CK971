@@ -124,9 +124,9 @@ export function EventDetailModal({
   const canDelete = currentUserId && event.creator?.id === currentUserId
 
   const renderComment = (comment: EventComment, depth = 0) => (
-    <div key={comment.id} className={depth > 0 ? "ml-6 border-l-2 border-amber-100 pl-3" : ""}>
+    <div key={comment.id} className={depth > 0 ? "ml-11" : ""}>
       <div className="flex gap-3">
-        <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
+        <div className={`rounded-full bg-amber-200 flex items-center justify-center text-amber-800 font-bold shrink-0 ${depth > 0 ? "w-7 h-7 text-xs" : "w-8 h-8 text-sm"}`}>
           {comment.user.name[0]}
         </div>
         <div className="flex-1">
@@ -135,13 +135,15 @@ export function EventDetailModal({
             <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString("zh-CN")}</span>
           </div>
           <p className="text-amber-900 text-sm mt-0.5">{comment.content}</p>
-          <button
-            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-            className="text-xs text-amber-600 hover:text-amber-800 mt-1"
-          >
-            {replyingTo === comment.id ? "取消" : "回复"}
-          </button>
-          {replyingTo === comment.id && (
+          {depth === 0 && (
+            <button
+              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+              className="text-xs text-amber-600 hover:text-amber-800 mt-1"
+            >
+              {replyingTo === comment.id ? "取消" : "回复"}
+            </button>
+          )}
+          {depth === 0 && replyingTo === comment.id && (
             <div className="flex gap-2 mt-2">
               <input
                 type="text"
