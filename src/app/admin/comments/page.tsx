@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Trash2, MessageCircle } from "lucide-react"
 
 type Tab = "photo" | "message" | "event"
@@ -52,39 +52,42 @@ export default function AdminCommentsPage() {
     { key: "event", label: "活动评论", count: data ? countAll(data.eventComments) : 0 },
   ]
 
-  function renderRow(
+  function collectRows(
     item: Comment,
     parentLabel: (item: Comment) => string,
     type: Tab,
     depth: number
-  ): React.ReactNode {
-    return (
-      <>
-        <tr key={item.id} className={`border-b border-gray-800/60 hover:bg-gray-800/40 ${depth > 0 ? "bg-gray-800/20" : ""}`}>
-          <td className={`px-4 py-3 text-gray-200 max-w-xs ${depth > 0 ? "pl-8" : ""}`}>
-            <p className="line-clamp-2">{item.content}</p>
-            {depth > 0 && <span className="text-xs text-gray-500">└ 回复</span>}
-          </td>
-          <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{item.user.name}</td>
-          <td className="px-4 py-3 text-gray-500 text-xs max-w-[160px]">
-            <p className="line-clamp-2">{parentLabel(item)}</p>
-          </td>
-          <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-            {new Date(item.createdAt).toLocaleDateString("zh-CN")}
-          </td>
-          <td className="px-4 py-3 text-right">
-            <button
-              onClick={() => deleteComment(type, item.id)}
-              className="p-1.5 rounded hover:bg-gray-700 text-red-400 transition-colors"
-            >
-              <Trash2 size={15} />
-            </button>
-          </td>
-        </tr>
-        {item.replies && item.replies.length > 0 &&
-          item.replies.map((reply) => renderRow(reply, parentLabel, type, depth + 1))}
-      </>
+  ) {
+    const rows: React.ReactElement[] = []
+    rows.push(
+      <tr key={item.id} className={`border-b border-gray-800/60 hover:bg-gray-800/40 ${depth > 0 ? "bg-gray-800/20" : ""}`}>
+        <td className={`px-4 py-3 text-gray-200 max-w-xs ${depth > 0 ? "pl-8" : ""}`}>
+          <p className="line-clamp-2">{item.content}</p>
+          {depth > 0 && <span className="text-xs text-gray-500">└ 回复</span>}
+        </td>
+        <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{item.user.name}</td>
+        <td className="px-4 py-3 text-gray-500 text-xs max-w-[160px]">
+          <p className="line-clamp-2">{parentLabel(item)}</p>
+        </td>
+        <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+          {new Date(item.createdAt).toLocaleDateString("zh-CN")}
+        </td>
+        <td className="px-4 py-3 text-right">
+          <button
+            onClick={() => deleteComment(type, item.id)}
+            className="p-1.5 rounded hover:bg-gray-700 text-red-400 transition-colors"
+          >
+            <Trash2 size={15} />
+          </button>
+        </td>
+      </tr>
     )
+    if (item.replies && item.replies.length > 0) {
+      for (const reply of item.replies) {
+        rows.push(...collectRows(reply, parentLabel, type, depth + 1))
+      }
+    }
+    return rows
   }
 
   const renderTable = (
@@ -110,7 +113,7 @@ export default function AdminCommentsPage() {
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => renderRow(item, parentLabel, type, 0))}
+            {items.flatMap((item) => collectRows(item, parentLabel, type, 0))}
           </tbody>
         </table>
       </div>
