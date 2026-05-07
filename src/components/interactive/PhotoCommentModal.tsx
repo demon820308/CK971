@@ -146,7 +146,7 @@ export function PhotoCommentModal({
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+          className="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -179,7 +179,7 @@ export function PhotoCommentModal({
               <img
                 src={photo.url}
                 alt={photo.caption || "照片"}
-                className="max-w-full max-h-[55vh] object-contain vintage-filter"
+                className="max-w-full max-h-[35vh] object-contain vintage-filter"
               />
               <button
                 onClick={() => setIsFullscreen(true)}
