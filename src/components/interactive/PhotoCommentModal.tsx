@@ -249,7 +249,7 @@ export function PhotoCommentModal({
 
                 {/* Nested replies */}
                 {comment.replies?.map((reply) => (
-                  <div key={reply.id} className="flex gap-3 ml-5">
+                  <div key={reply.id} className="flex gap-3 ml-11">
                     <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold shrink-0">
                       {reply.user.name[0]}
                     </div>
@@ -271,7 +271,7 @@ export function PhotoCommentModal({
 
                 {/* Reply input */}
                 {replyTo === comment.id && (
-                  <div className="ml-5 flex gap-2">
+                  <div className="ml-11 flex gap-2">
                     <input
                       type="text"
                       value={newComment}
