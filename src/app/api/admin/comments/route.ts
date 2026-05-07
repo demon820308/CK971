@@ -18,22 +18,56 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     }),
     prisma.messageReply.findMany({
+      where: { parentId: null },
       select: {
         id: true,
         content: true,
         createdAt: true,
         user: { select: { id: true, name: true } },
         message: { select: { id: true, content: true } },
+        replies: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            user: { select: { id: true, name: true } },
+            replies: {
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                user: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
     prisma.eventComment.findMany({
+      where: { parentId: null },
       select: {
         id: true,
         content: true,
         createdAt: true,
         user: { select: { id: true, name: true } },
         event: { select: { id: true, title: true } },
+        replies: {
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            user: { select: { id: true, name: true } },
+            replies: {
+              select: {
+                id: true,
+                content: true,
+                createdAt: true,
+                user: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
