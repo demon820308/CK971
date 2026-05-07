@@ -124,7 +124,7 @@ export function EventDetailModal({
   const canDelete = currentUserId && event.creator?.id === currentUserId
 
   const renderComment = (comment: EventComment, depth = 0) => (
-    <div key={comment.id} className={depth > 0 ? "ml-11" : ""}>
+    <div key={comment.id} className={depth > 0 ? "ml-6" : ""}>
       <div className="flex gap-3">
         <div className={`rounded-full bg-amber-200 flex items-center justify-center text-amber-800 font-bold shrink-0 ${depth > 0 ? "w-7 h-7 text-xs" : "w-8 h-8 text-sm"}`}>
           {comment.user.name[0]}
