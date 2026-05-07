@@ -179,7 +179,7 @@ export function PhotoCommentModal({
               <img
                 src={photo.url}
                 alt={photo.caption || "照片"}
-                className="max-w-full max-h-[35vh] object-contain vintage-filter"
+                className="max-w-full max-h-[50vh] object-contain vintage-filter"
               />
               <button
                 onClick={() => setIsFullscreen(true)}
