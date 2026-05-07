@@ -157,10 +157,12 @@ User ──1:N── Photo
 
 - **提供商**：Neon（Serverless PostgreSQL）
 - **区域**：AWS ap-southeast-1（新加坡）
-- **连接字符串**：
-  ```
-  postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-  ```
+- **本项目实际使用的连接字符串格式：
+
+```
+postgresql://user:pass@host/db?sslmode=require
+```
+
 - **SSL**：必须启用 `sslmode=require`
 - **ORM**：Prisma，生成路径 `src/generated/prisma`
 
@@ -227,9 +229,9 @@ images: {
 
 | 变量名 | 值 | 用途 |
 |--------|-----|------|
-| `DATABASE_URL` | `postgresql://neondb_owner:...?sslmode=require` | Neon 数据库连接 |
-| `AUTH_SECRET` | `yqFhXZBMi5K8LpQeTvRjWnUoAsDg1C3w` | NextAuth JWT 密钥 |
-| `BLOB_READ_WRITE_TOKEN` | `vercel_blob_rw_UEnFOdlGHiuMOnYI_0Q4fmt5J9yQ4uFVPfP8UBj4C3NkjCt` | Vercel Blob Token |
+| `DATABASE_URL` | `postgresql://user:pass@host/db?sslmode=require`（你的 Neon 连接字符串） | Neon 数据库连接 |
+| `AUTH_SECRET` | `（openssl rand -base64 32 生成）` | NextAuth JWT 密钥 |
+| `BLOB_READ_WRITE_TOKEN` | `（从 Vercel Blob 获取）` | Vercel Blob Token |
 
 ### 7.2 构建命令
 

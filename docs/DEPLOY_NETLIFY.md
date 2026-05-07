@@ -27,7 +27,7 @@
 本项目实际使用的连接字符串：
 
 ```
-postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+postgresql://user:pass@host/db?sslmode=require（你的 Neon 连接字符串）
 ```
 
 **注意**：
@@ -41,7 +41,7 @@ postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-sout
 
 ```bash
 # 设置环境变量指向 Neon
-$env:DATABASE_URL="postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+$env:DATABASE_URL="postgresql://user:pass@host/db?sslmode=require"（替换为你的 Neon 连接字符串）
 
 # 推送 schema（不需要迁移，直接同步）
 npx prisma db push
@@ -87,9 +87,9 @@ npx prisma generate
 
 | Key | Value | Secret? |
 |-----|-------|---------|
-| `DATABASE_URL` | `postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` | ✅ 勾选 |
-| `AUTH_SECRET` | `yqFhXZBMi5K8LpQeTvRjWnUoAsDg1C3w` | ✅ 勾选 |
-| `BLOB_READ_WRITE_TOKEN` | `vercel_blob_rw_UEnFOdlGHiuMOnYI_0Q4fmt5J9yQ4uFVPfP8UBj4C3NkjCt` | ✅ 勾选 |
+| `DATABASE_URL` | `postgresql://user:pass@host/db?sslmode=require`（你的 Neon 连接字符串） | ✅ 勾选 |
+| `AUTH_SECRET` | `（openssl rand -base64 32 生成）` | ✅ 勾选 |
+| `BLOB_READ_WRITE_TOKEN` | `（从 Vercel Blob 获取）` | ✅ 勾选 |
 
 **默认值备忘**：
 - 默认班级邀请码：`CK971-1997`

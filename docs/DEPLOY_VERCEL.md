@@ -24,10 +24,10 @@
 
 ### 1.2 获取 DATABASE_URL
 
-本项目实际使用的连接字符串：
+本项目实际使用的连接字符串格式：
 
 ```
-postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
+postgresql://user:pass@host/db?sslmode=require
 ```
 
 **注意**：
@@ -41,7 +41,7 @@ postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-sout
 
 ```bash
 # 设置环境变量指向 Neon
-$env:DATABASE_URL="postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+$env:DATABASE_URL="postgresql://user:pass@host/db?sslmode=require"（替换为你的 Neon 连接字符串）
 
 # 推送 schema（不需要迁移，直接同步）
 npx prisma db push
@@ -68,9 +68,9 @@ npx prisma generate
 
 | 变量名 | 值 | 说明 |
 |--------|-----|------|
-| `DATABASE_URL` | `postgresql://neondb_owner:npg_yR1MBZv2QGIq@ep-lively-violet-aopruxud.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require` | Neon 连接字符串 |
-| `AUTH_SECRET` | `yqFhXZBMi5K8LpQeTvRjWnUoAsDg1C3w` | NextAuth 加密密钥 |
-| `BLOB_READ_WRITE_TOKEN` | `vercel_blob_rw_UEnFOdlGHiuMOnYI_0Q4fmt5J9yQ4uFVPfP8UBj4C3NkjCt` | Vercel Blob 图片存储 Token |
+| `DATABASE_URL` | `postgresql://user:pass@host/db?sslmode=require`（你的 Neon 连接字符串） | Neon 连接字符串 |
+| `AUTH_SECRET` | `（openssl rand -base64 32 生成）` | NextAuth 加密密钥 |
+| `BLOB_READ_WRITE_TOKEN` | `（从 Vercel Blob 获取）` | Vercel Blob 图片存储 Token |
 | `NEXTAUTH_URL` | `https://你的域名.vercel.app` | 可选，Vercel 会自动推断 |
 
 **默认值备忘**：
