@@ -54,7 +54,7 @@ export default function AdminCommentsPage() {
 
   function collectRows(
     item: Comment,
-    parentLabel: (item: Comment) => string,
+    parentText: string,
     type: Tab,
     depth: number
   ) {
@@ -67,7 +67,7 @@ export default function AdminCommentsPage() {
         </td>
         <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{item.user.name}</td>
         <td className="px-4 py-3 text-gray-500 text-xs max-w-[160px]">
-          <p className="line-clamp-2">{parentLabel(item)}</p>
+          <p className="line-clamp-2">{parentText}</p>
         </td>
         <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
           {new Date(item.createdAt).toLocaleDateString("zh-CN")}
@@ -84,7 +84,7 @@ export default function AdminCommentsPage() {
     )
     if (item.replies && item.replies.length > 0) {
       for (const reply of item.replies) {
-        rows.push(...collectRows(reply, parentLabel, type, depth + 1))
+        rows.push(...collectRows(reply, parentText, type, depth + 1))
       }
     }
     return rows
@@ -113,7 +113,9 @@ export default function AdminCommentsPage() {
             </tr>
           </thead>
           <tbody>
-            {items.flatMap((item) => collectRows(item, parentLabel, type, 0))}
+            {items.flatMap((item) =>
+              collectRows(item, parentLabel(item), type, 0)
+            )}
           </tbody>
         </table>
       </div>
