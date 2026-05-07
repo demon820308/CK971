@@ -123,7 +123,7 @@ export function MessageDetailModal({
   const renderReply = (reply: MessageReply, depth = 0) => (
     <div key={reply.id} className={depth > 0 ? "ml-11" : ""}>
       <div className="flex gap-3">
-        <div className={`rounded-full bg-amber-200 flex items-center justify-center text-amber-800 font-bold shrink-0 ${depth > 0 ? "w-7 h-7 text-xs" : "w-8 h-8 text-sm"}`}>
+        <div className={`rounded-full flex items-center justify-center font-bold shrink-0 ${depth > 0 ? "w-7 h-7 text-xs bg-amber-100 text-amber-700" : "w-8 h-8 text-sm bg-amber-200 text-amber-800"}`}>
           {reply.user.name[0]}
         </div>
         <div className="flex-1">
