@@ -120,10 +120,10 @@ export function MessageDetailModal({
 
   const canDelete = currentUserId && message.author?.id === currentUserId
 
-  const renderReply = (reply: MessageReply, depth = 0) => (
-    <div key={reply.id} className={depth > 0 ? "ml-11" : ""}>
+  const renderReply = (reply: MessageReply) => (
+    <div key={reply.id} className="space-y-2">
       <div className="flex gap-3">
-        <div className={`rounded-full flex items-center justify-center font-bold shrink-0 ${depth > 0 ? "w-7 h-7 text-xs bg-amber-100 text-amber-700" : "w-8 h-8 text-sm bg-amber-200 text-amber-800"}`}>
+        <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
           {reply.user.name[0]}
         </div>
         <div className="flex-1">
@@ -132,15 +132,13 @@ export function MessageDetailModal({
             <span className="text-xs text-gray-400">{new Date(reply.createdAt).toLocaleDateString("zh-CN")}</span>
           </div>
           <p className="text-amber-900 text-sm mt-0.5">{reply.content}</p>
-          {depth === 0 && (
-            <button
-              onClick={() => setReplyingTo(replyingTo === reply.id ? null : reply.id)}
-              className="text-xs text-amber-600 hover:text-amber-800 mt-1"
-            >
-              {replyingTo === reply.id ? "取消" : "回复"}
-            </button>
-          )}
-          {depth === 0 && replyingTo === reply.id && (
+          <button
+            onClick={() => setReplyingTo(replyingTo === reply.id ? null : reply.id)}
+            className="text-xs text-amber-600 hover:text-amber-800 mt-1"
+          >
+            {replyingTo === reply.id ? "取消" : "回复"}
+          </button>
+          {replyingTo === reply.id && (
             <div className="flex gap-2 mt-2">
               <input
                 type="text"
@@ -160,13 +158,26 @@ export function MessageDetailModal({
               </button>
             </div>
           )}
-          {reply.replies && reply.replies.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {reply.replies.map((r) => renderReply(r, depth + 1))}
-            </div>
-          )}
         </div>
       </div>
+      {reply.replies && reply.replies.length > 0 && (
+        <div className="space-y-2">
+          {reply.replies.map((r) => (
+            <div key={r.id} className="flex gap-3 ml-11">
+              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold shrink-0">
+                {r.user.name[0]}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-amber-800 text-sm">{r.user.name}</span>
+                  <span className="text-xs text-gray-400">{new Date(r.createdAt).toLocaleDateString("zh-CN")}</span>
+                </div>
+                <p className="text-amber-900 text-sm mt-0.5">{r.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 

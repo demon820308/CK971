@@ -123,10 +123,10 @@ export function EventDetailModal({
 
   const canDelete = currentUserId && event.creator?.id === currentUserId
 
-  const renderComment = (comment: EventComment, depth = 0) => (
-    <div key={comment.id} className={depth > 0 ? "ml-11" : ""}>
+  const renderComment = (comment: EventComment) => (
+    <div key={comment.id} className="space-y-2">
       <div className="flex gap-3">
-        <div className={`rounded-full flex items-center justify-center font-bold shrink-0 ${depth > 0 ? "w-7 h-7 text-xs bg-amber-100 text-amber-700" : "w-8 h-8 text-sm bg-amber-200 text-amber-800"}`}>
+        <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
           {comment.user.name[0]}
         </div>
         <div className="flex-1">
@@ -135,15 +135,13 @@ export function EventDetailModal({
             <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString("zh-CN")}</span>
           </div>
           <p className="text-amber-900 text-sm mt-0.5">{comment.content}</p>
-          {depth === 0 && (
-            <button
-              onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-              className="text-xs text-amber-600 hover:text-amber-800 mt-1"
-            >
-              {replyingTo === comment.id ? "取消" : "回复"}
-            </button>
-          )}
-          {depth === 0 && replyingTo === comment.id && (
+          <button
+            onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+            className="text-xs text-amber-600 hover:text-amber-800 mt-1"
+          >
+            {replyingTo === comment.id ? "取消" : "回复"}
+          </button>
+          {replyingTo === comment.id && (
             <div className="flex gap-2 mt-2">
               <input
                 type="text"
@@ -163,13 +161,26 @@ export function EventDetailModal({
               </button>
             </div>
           )}
-          {comment.replies && comment.replies.length > 0 && (
-            <div className="mt-2 space-y-2">
-              {comment.replies.map((r) => renderComment(r, depth + 1))}
-            </div>
-          )}
         </div>
       </div>
+      {comment.replies && comment.replies.length > 0 && (
+        <div className="space-y-2">
+          {comment.replies.map((reply) => (
+            <div key={reply.id} className="flex gap-3 ml-11">
+              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold shrink-0">
+                {reply.user.name[0]}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-amber-800 text-sm">{reply.user.name}</span>
+                  <span className="text-xs text-gray-400">{new Date(reply.createdAt).toLocaleDateString("zh-CN")}</span>
+                </div>
+                <p className="text-amber-900 text-sm mt-0.5">{reply.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 
