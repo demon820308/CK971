@@ -127,17 +127,17 @@ export default function AdminCommentsPage() {
         <>
           {tab === "photo" && renderTable(
             data.photoComments as Comment[],
-            (item) => ((item as unknown) as { photo: { caption: string | null } }).photo.caption ?? "（无标题）",
+            (item) => (item as CommentsData["photoComments"][number]).photo.caption ?? "（无标题）",
             "photo"
           )}
           {tab === "message" && renderTable(
             data.messageReplies as Comment[],
-            (item) => ((item as unknown) as { message: { content: string } }).message.content,
+            (item) => (item as CommentsData["messageReplies"][number]).message.content,
             "message"
           )}
           {tab === "event" && renderTable(
             data.eventComments as Comment[],
-            (item) => ((item as unknown) as { event: { title: string } }).event.title,
+            (item) => (item as CommentsData["eventComments"][number]).event.title,
             "event"
           )}
         </>
