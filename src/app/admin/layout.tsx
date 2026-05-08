@@ -21,15 +21,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter()
   const { data: session, status } = useSession()
 
-  if (pathname === "/admin/setup") return <>{children}</>
-
   useEffect(() => {
+    if (pathname === "/admin/setup") return
     if (status === "loading") return
     const role = (session?.user as { role?: string })?.role
-    if (!session || (role !== "ADMIN" && role !== "SUPER_ADMIN")) {
+    if (!session || role !== "SUPER_ADMIN") {
       router.replace("/login")
     }
-  }, [session, status, router])
+  }, [pathname, session, status, router])
+
+  if (pathname === "/admin/setup") return <>{children}</>
 
   if (status === "loading") {
     return (

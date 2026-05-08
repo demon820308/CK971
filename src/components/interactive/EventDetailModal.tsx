@@ -55,12 +55,12 @@ export function EventDetailModal({
   const [comments, setComments] = useState<EventComment[]>([])
   const [newComment, setNewComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [nestedReplyText, setNestedReplyText] = useState("")
-  const [attending, setAttending] = useState(false)
-  const [attendeeCount, setAttendeeCount] = useState(0)
+  const [attending, setAttending] = useState(() => event?.isAttending ?? false)
+  const [attendeeCount, setAttendeeCount] = useState(() => event?.attendeeCount ?? 0)
   const [isRsvping, setIsRsvping] = useState(false)
   const [attendees, setAttendees] = useState<Pick<User, "id" | "name" | "avatar">[]>([])
   const [showAttendees, setShowAttendees] = useState(false)
@@ -75,11 +75,6 @@ export function EventDetailModal({
 
   useEffect(() => {
     if (!event) return
-    setAttending(event.isAttending)
-    setAttendeeCount(event.attendeeCount)
-    setAttendees([])
-    setShowAttendees(false)
-    setIsLoading(true)
     fetch(`/api/events/${event.id}/comments`)
       .then((res) => readJsonArray<EventComment>(res, "event comments"))
       .then(setComments)

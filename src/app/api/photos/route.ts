@@ -2,6 +2,23 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { uploadPhoto } from "@/lib/upload"
+import type { StickyColor } from "@/generated/prisma/client"
+
+type PhotoRecord = {
+  id: string
+  url: string
+  caption: string | null
+  takenAt: Date | null
+  uploadedAt: Date
+  rotation: number
+  zIndex: number
+  cropX: number
+  cropY: number
+  uploader: { id: string; name: string; avatar: string | null }
+  _count: { likes: number; comments: number }
+  likes: { id: string }[]
+  color?: StickyColor
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -23,7 +40,7 @@ export async function GET(request: Request) {
   return getPhotos(classId, cursor, limit, session?.user?.id, topLiked)
 }
 
-function formatPhoto(photo: any, userId?: string) {
+function formatPhoto(photo: PhotoRecord, userId?: string) {
   return {
     id: photo.id,
     url: photo.url,

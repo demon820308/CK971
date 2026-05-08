@@ -27,17 +27,14 @@ export function PhotoCommentModal({
   const [newComment, setNewComment] = useState("")
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [liked, setLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [liked, setLiked] = useState(() => photo?.isLiked ?? false)
+  const [likeCount, setLikeCount] = useState(() => photo?.likeCount ?? 0)
   const [isLiking, setIsLiking] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
 
   useEffect(() => {
     if (!photo) return
-    setLiked(photo.isLiked)
-    setLikeCount(photo.likeCount)
-    setIsLoading(true)
     fetch(`/api/photos/${photo.id}/comments`)
       .then((res) => res.json())
       .then((data) => setComments(data))

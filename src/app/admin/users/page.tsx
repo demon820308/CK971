@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Trash2, Ban, CheckCircle, KeyRound, Search } from "lucide-react"
+import { toast } from "@/lib/toast"
 
 interface User {
   id: string
@@ -31,8 +32,14 @@ export default function AdminUsersPage() {
 
   const deleteUser = async (id: string, name: string) => {
     if (!confirm(`确认删除用户「${name}」？此操作不可撤销。`)) return
-    await fetch(`/api/admin/users/${id}`, { method: "DELETE" })
+    const res = await fetch(`/api/admin/users/${id}`, { method: "DELETE" })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      toast.error(data.error || "删除失败")
+      return
+    }
     setUsers((prev) => prev.filter((u) => u.id !== id))
+    toast.success("用户已删除")
   }
 
   const toggleBan = async (id: string, banned: boolean) => {
@@ -100,7 +107,7 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       {user.avatar ? (
-                        <img src={user.avatar} className="w-7 h-7 rounded-full object-cover" />
+                        <img src={user.avatar} alt="" className="w-7 h-7 rounded-full object-cover" />
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-amber-500/30 flex items-center justify-center text-amber-300 text-xs font-bold">
                           {user.name[0]}

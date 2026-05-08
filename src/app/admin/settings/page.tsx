@@ -6,6 +6,7 @@ import { Save, Settings, Pencil, X } from "lucide-react"
 interface ClassSettings {
   id: string
   name: string
+  inviteCode: string
   schoolName: string | null
   gradeYear: number | null
   endYear: number | null
@@ -24,7 +25,11 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     fetch("/api/admin/settings")
       .then((r) => r.json())
-      .then((d) => { setData(d); setForm(d); setLoading(false) })
+      .then((d) => {
+        setData(d)
+        setForm(d)
+        setLoading(false)
+      })
   }, [])
 
   const startEdit = () => {
@@ -49,6 +54,7 @@ export default function AdminSettingsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: form.name,
+        inviteCode: form.inviteCode,
         schoolName: form.schoolName,
         gradeYear: form.gradeYear?.toString() ?? "",
         endYear: form.endYear?.toString() ?? "",
@@ -70,7 +76,9 @@ export default function AdminSettingsPage() {
     setSaving(false)
   }
 
-  if (loading || !data || !form) return <div className="p-8 text-gray-400">加载中...</div>
+  if (loading || !data || !form) {
+    return <div className="p-8 text-gray-400">加载中...</div>
+  }
 
   return (
     <div className="p-8 max-w-xl">
@@ -92,12 +100,11 @@ export default function AdminSettingsPage() {
 
       {saved && (
         <div className="mb-4 px-4 py-2.5 bg-green-500/15 border border-green-500/30 text-green-400 rounded-lg text-sm">
-          已保存成功 ✓
+          已保存成功
         </div>
       )}
 
       <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 space-y-5">
-        {/* 班级名称 */}
         <div>
           <p className="text-gray-500 text-xs mb-1">班级名称</p>
           {editing ? (
@@ -111,7 +118,19 @@ export default function AdminSettingsPage() {
           )}
         </div>
 
-        {/* 学校名称 */}
+        <div>
+          <p className="text-gray-500 text-xs mb-1">邀请码</p>
+          {editing ? (
+            <input
+              value={form.inviteCode}
+              onChange={(e) => setForm({ ...form, inviteCode: e.target.value })}
+              className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-amber-400"
+            />
+          ) : (
+            <p className="text-white text-base">{data.inviteCode || "—"}</p>
+          )}
+        </div>
+
         <div>
           <p className="text-gray-500 text-xs mb-1">学校名称</p>
           {editing ? (
@@ -125,7 +144,6 @@ export default function AdminSettingsPage() {
           )}
         </div>
 
-        {/* 在校期间 */}
         <div>
           <p className="text-gray-500 text-xs mb-1">在校期间</p>
           {editing ? (
@@ -133,15 +151,19 @@ export default function AdminSettingsPage() {
               <input
                 type="number"
                 value={form.gradeYear ?? ""}
-                onChange={(e) => setForm({ ...form, gradeYear: e.target.value ? parseInt(e.target.value) : null })}
-                placeholder="开始年份（如 1997）"
+                onChange={(e) =>
+                  setForm({ ...form, gradeYear: e.target.value ? parseInt(e.target.value, 10) : null })
+                }
+                placeholder="开始年份"
                 className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-amber-400"
               />
               <input
                 type="number"
                 value={form.endYear ?? ""}
-                onChange={(e) => setForm({ ...form, endYear: e.target.value ? parseInt(e.target.value) : null })}
-                placeholder="结束年份（如 2000）"
+                onChange={(e) =>
+                  setForm({ ...form, endYear: e.target.value ? parseInt(e.target.value, 10) : null })
+                }
+                placeholder="结束年份"
                 className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-amber-400"
               />
             </div>
@@ -154,7 +176,6 @@ export default function AdminSettingsPage() {
           )}
         </div>
 
-        {/* 班级简介 */}
         <div>
           <p className="text-gray-500 text-xs mb-1">班级简介</p>
           {editing ? (

@@ -28,7 +28,10 @@ export default function AdminCommentsPage() {
   useEffect(() => {
     fetch("/api/admin/comments")
       .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false) })
+      .then((d) => {
+        setData(d)
+        setLoading(false)
+      })
   }, [])
 
   const deleteComment = async (type: Tab, id: string) => {
@@ -36,8 +39,12 @@ export default function AdminCommentsPage() {
     await fetch(`/api/admin/comments/${type}/${id}`, { method: "DELETE" })
     setData((prev) => {
       if (!prev) return prev
-      if (type === "photo") return { ...prev, photoComments: prev.photoComments.filter((c) => c.id !== id) }
-      if (type === "message") return { ...prev, messageReplies: prev.messageReplies.filter((c) => c.id !== id) }
+      if (type === "photo") {
+        return { ...prev, photoComments: prev.photoComments.filter((c) => c.id !== id) }
+      }
+      if (type === "message") {
+        return { ...prev, messageReplies: prev.messageReplies.filter((c) => c.id !== id) }
+      }
       return { ...prev, eventComments: prev.eventComments.filter((c) => c.id !== id) }
     })
   }
@@ -60,10 +67,12 @@ export default function AdminCommentsPage() {
   ) {
     const rows: React.ReactElement[] = []
     rows.push(
-      <tr key={item.id} className={`border-b border-gray-800/60 hover:bg-gray-800/40 ${depth > 0 ? "bg-gray-800/20" : ""}`}>
-        <td className={`px-4 py-3 text-gray-200 max-w-xs ${depth > 0 ? "pl-8" : ""}`}>
+      <tr
+        key={item.id}
+        className={`border-b border-gray-800/60 hover:bg-gray-800/40 ${depth > 0 ? "bg-gray-800/20" : ""}`}
+      >
+        <td className="px-4 py-3 text-gray-200 max-w-xs">
           <p className="line-clamp-2">{item.content}</p>
-          {depth > 0 && <span className="text-xs text-gray-500">└ 回复</span>}
         </td>
         <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{item.user.name}</td>
         <td className="px-4 py-3 text-gray-500 text-xs max-w-[160px]">
@@ -113,9 +122,7 @@ export default function AdminCommentsPage() {
             </tr>
           </thead>
           <tbody>
-            {items.flatMap((item) =>
-              collectRows(item, parentLabel(item), type, 0)
-            )}
+            {items.flatMap((item) => collectRows(item, parentLabel(item), type, 0))}
           </tbody>
         </table>
       </div>
@@ -126,16 +133,13 @@ export default function AdminCommentsPage() {
     <div className="p-8">
       <h1 className="text-white text-2xl font-bold mb-6">回复管理</h1>
 
-      {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-gray-900 border border-gray-800 rounded-lg p-1 w-fit">
         {tabs.map(({ key, label, count }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`px-4 py-1.5 rounded text-sm transition-colors ${
-              tab === key
-                ? "bg-amber-500/20 text-amber-300"
-                : "text-gray-400 hover:text-white"
+              tab === key ? "bg-amber-500/20 text-amber-300" : "text-gray-400 hover:text-white"
             }`}
           >
             {label}
@@ -144,26 +148,28 @@ export default function AdminCommentsPage() {
         ))}
       </div>
 
-      {/* Netlify rebuild trigger */}
       {loading || !data ? (
         <p className="text-gray-400">加载中...</p>
       ) : (
         <>
-          {tab === "photo" && renderTable(
-            data.photoComments as Comment[],
-            (item) => (item as CommentsData["photoComments"][number]).photo.caption ?? "（无标题）",
-            "photo"
-          )}
-          {tab === "message" && renderTable(
-            data.messageReplies as Comment[],
-            (item) => (item as CommentsData["messageReplies"][number]).message.content,
-            "message"
-          )}
-          {tab === "event" && renderTable(
-            data.eventComments as Comment[],
-            (item) => (item as CommentsData["eventComments"][number]).event.title,
-            "event"
-          )}
+          {tab === "photo" &&
+            renderTable(
+              data.photoComments as Comment[],
+              (item) => (item as CommentsData["photoComments"][number]).photo.caption ?? "（无标题）",
+              "photo"
+            )}
+          {tab === "message" &&
+            renderTable(
+              data.messageReplies as Comment[],
+              (item) => (item as CommentsData["messageReplies"][number]).message.content,
+              "message"
+            )}
+          {tab === "event" &&
+            renderTable(
+              data.eventComments as Comment[],
+              (item) => (item as CommentsData["eventComments"][number]).event.title,
+              "event"
+            )}
         </>
       )}
     </div>

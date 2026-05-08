@@ -18,12 +18,11 @@ interface ClassInfoModalProps {
 
 export function ClassInfoModal({ isOpen, onClose, classInfo }: ClassInfoModalProps) {
   const [members, setMembers] = useState<ClassMember[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
-    setIsLoading(true)
     fetch("/api/classes/members")
       .then((res) => res.json())
       .then((data) => setMembers(data.items ?? []))

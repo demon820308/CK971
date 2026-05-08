@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { usePathname } from "next/navigation"
 import { createPortal } from "react-dom"
 import { useSession } from "next-auth/react"
@@ -40,9 +40,7 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
   const [selectedColor, setSelectedColor] = useState<StickyColor>("YELLOW")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => { setMounted(true) }, [])
+  const portalTarget = typeof document === "undefined" ? null : document.body
 
   const handleDeleteMessage = async (id: string) => {
     await fetch(`/api/messages/${id}`, { method: "DELETE" })
@@ -105,7 +103,7 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
       </motion.div>
 
       {/* Message compose modal via portal */}
-      {mounted && createPortal(
+      {portalTarget && createPortal(
         <AnimatePresence>
           {composeOpen && (
             <motion.div
@@ -175,7 +173,7 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
             </motion.div>
           )}
         </AnimatePresence>,
-        document.body
+        portalTarget
       )}
 
       {/* Notes board (desktop) — dark navy board with tape-crossed notes */}
@@ -312,8 +310,9 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
         </div>
       )}
 
-      {mounted && createPortal(
+      {portalTarget && createPortal(
         <MessageDetailModal
+          key={selectedMessage?.id ?? "message-detail"}
           message={selectedMessage}
           onClose={() => setSelectedMessage(null)}
           onLike={toggleLike}
@@ -323,7 +322,7 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
           onDelete={handleDeleteMessage}
           currentUserId={session?.user?.id}
         />,
-        document.body
+        portalTarget
       )}
     </section>
   )

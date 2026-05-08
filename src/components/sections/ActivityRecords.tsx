@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { usePathname } from "next/navigation"
 import { createPortal } from "react-dom"
 import { useSession } from "next-auth/react"
@@ -33,9 +33,7 @@ export function ActivityRecords({
   const { data: session } = useSession()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => { setMounted(true) }, [])
+  const portalTarget = typeof document === "undefined" ? null : document.body
 
   const handleDeleteEvent = async (id: string) => {
     await fetch(`/api/events/${id}`, { method: "DELETE" })
@@ -108,7 +106,7 @@ export function ActivityRecords({
       </div>
 
       {/* Event creation modal via portal */}
-      {mounted && createPortal(
+      {portalTarget && createPortal(
         <AnimatePresence>
           {composeOpen && (
             <motion.div
@@ -189,7 +187,7 @@ export function ActivityRecords({
             </motion.div>
           )}
         </AnimatePresence>,
-        document.body
+        portalTarget
       )}
 
       <div className="max-w-3xl mx-auto space-y-8">
@@ -284,15 +282,16 @@ export function ActivityRecords({
         </div>
       )}
 
-      {mounted && createPortal(
+      {portalTarget && createPortal(
         <EventDetailModal
+          key={selectedEvent?.id ?? "event-detail"}
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
           onDelete={handleDeleteEvent}
           onRsvp={toggleRsvp}
           currentUserId={session?.user?.id}
         />,
-        document.body
+        portalTarget
       )}
     </section>
   )

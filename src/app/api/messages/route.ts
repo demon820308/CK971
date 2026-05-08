@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import type { StickyColor } from "@/generated/prisma/client"
+
+type MessageRecord = {
+  id: string
+  content: string
+  color: StickyColor
+  createdAt: Date
+  rotation: number
+  posX: number | null
+  posY: number | null
+  author: { id: string; name: string; avatar: string | null }
+  _count: { likes: number; replies: number }
+  likes: { id: string }[]
+}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -22,7 +36,7 @@ export async function GET(request: Request) {
   return getMessages(classId, cursor, limit, session?.user?.id, topLiked)
 }
 
-function formatMessage(msg: any, userId?: string) {
+function formatMessage(msg: MessageRecord, userId?: string) {
   return {
     id: msg.id,
     content: msg.content,

@@ -31,9 +31,7 @@ export function PhotoMemories({ limit, topLiked, maxPages }: PhotoMemoriesProps 
   }
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => { setMounted(true) }, [])
+  const portalTarget = typeof document === "undefined" ? null : document.body
 
   const handleIntersect = useCallback(
     (entries: IntersectionObserverEntry[]) => {
@@ -147,8 +145,9 @@ export function PhotoMemories({ limit, topLiked, maxPages }: PhotoMemoriesProps 
         )}
       </div>
 
-      {mounted && createPortal(
+      {portalTarget && createPortal(
         <PhotoCommentModal
+          key={selectedPhoto?.id ?? "photo-detail"}
           photo={selectedPhoto}
           onClose={() => setSelectedPhoto(null)}
           onComment={addComment}
@@ -156,7 +155,7 @@ export function PhotoMemories({ limit, topLiked, maxPages }: PhotoMemoriesProps 
           onDelete={handleDeletePhoto}
           currentUserId={session?.user?.id}
         />,
-        document.body
+        portalTarget
       )}
     </section>
   )

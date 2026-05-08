@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -14,6 +14,28 @@ interface ToastItem {
 const EVENT = "__app_toast__"
 let counter = 0
 
+const mountedStore = (() => {
+  let mounted = false
+  const listeners = new Set<() => void>()
+
+  return {
+    getSnapshot: () => mounted,
+    getServerSnapshot: () => false,
+    subscribe: (listener: () => void) => {
+      listeners.add(listener)
+      if (!mounted) {
+        mounted = true
+        queueMicrotask(() => {
+          listeners.forEach((notify) => notify())
+        })
+      }
+      return () => {
+        listeners.delete(listener)
+      }
+    },
+  }
+})()
+
 export function toast(message: string, type: ToastType = "info") {
   if (typeof window === "undefined") return
   const detail: ToastItem = { id: ++counter, message, type }
@@ -26,10 +48,13 @@ toast.info = (m: string) => toast(m, "info")
 
 export function ToastHost() {
   const [items, setItems] = useState<ToastItem[]>([])
-  const [mounted, setMounted] = useState(false)
+  const mounted = useSyncExternalStore(
+    mountedStore.subscribe,
+    mountedStore.getSnapshot,
+    mountedStore.getServerSnapshot
+  )
 
   useEffect(() => {
-    setMounted(true)
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<ToastItem>).detail
       setItems((prev) => [...prev, detail])
@@ -37,11 +62,12 @@ export function ToastHost() {
         setItems((prev) => prev.filter((t) => t.id !== detail.id))
       }, 2500)
     }
+
     window.addEventListener(EVENT, handler)
     return () => window.removeEventListener(EVENT, handler)
   }, [])
 
-  if (!mounted) return null
+  if (!mounted || typeof document === "undefined") return null
 
   return createPortal(
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[1000] flex flex-col gap-2 pointer-events-none">

@@ -115,6 +115,7 @@ export default function HomePage() {
       />
 
       <ClassInfoModal
+        key={showClassModal ? classInfo?.id ?? "open" : "closed"}
         isOpen={showClassModal}
         onClose={() => setShowClassModal(false)}
         classInfo={classInfo ?? null}

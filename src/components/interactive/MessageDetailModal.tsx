@@ -51,9 +51,9 @@ export function MessageDetailModal({
   const [replies, setReplies] = useState<MessageReply[]>([])
   const [newReply, setNewReply] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [liked, setLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(true)
+  const [liked, setLiked] = useState(() => message?.isLiked ?? false)
+  const [likeCount, setLikeCount] = useState(() => message?.likeCount ?? 0)
   const [isLiking, setIsLiking] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
@@ -61,9 +61,6 @@ export function MessageDetailModal({
 
   useEffect(() => {
     if (!message) return
-    setLiked(message.isLiked)
-    setLikeCount(message.likeCount)
-    setIsLoading(true)
     fetch(`/api/messages/${message.id}/replies`)
       .then((res) => readJsonArray<MessageReply>(res))
       .then(setReplies)

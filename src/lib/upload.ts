@@ -1,8 +1,31 @@
 import { v4 as uuidv4 } from "uuid"
 import sharp from "sharp"
 import { put } from "@vercel/blob"
+import { mkdir, writeFile } from "node:fs/promises"
+import path from "node:path"
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+
+function hasBlobCredentials() {
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN)
+}
+
+async function writeLocalAsset(folder: string, name: string, buffer: Buffer) {
+  const dir = path.join(process.cwd(), "public", "uploads", folder)
+  await mkdir(dir, { recursive: true })
+  const fullPath = path.join(dir, name)
+  await writeFile(fullPath, buffer)
+  return `/uploads/${folder}/${name}`
+}
+
+async function saveAsset(folder: string, name: string, buffer: Buffer) {
+  if (hasBlobCredentials()) {
+    const result = await put(`${folder}/${name}`, buffer, { access: "public" })
+    return result.url
+  }
+
+  return writeLocalAsset(folder, name, buffer)
+}
 
 export async function uploadPhoto(
   file: File
@@ -14,27 +37,22 @@ export async function uploadPhoto(
   const buffer = Buffer.from(await file.arrayBuffer())
   const id = uuidv4()
 
-  // Generate display version (800px wide)
   const displayBuffer = await sharp(buffer)
     .resize(800, 800, { fit: "inside", withoutEnlargement: true })
     .webp({ quality: 85 })
     .toBuffer()
 
-  // Generate thumbnail (400px wide)
   const thumbnailBuffer = await sharp(buffer)
     .resize(400, 400, { fit: "inside", withoutEnlargement: true })
     .webp({ quality: 75 })
     .toBuffer()
 
-  const [displayResult, thumbnailResult] = await Promise.all([
-    put(`photos/${id}.webp`, displayBuffer, { access: "public" }),
-    put(`photos/${id}-thumb.webp`, thumbnailBuffer, { access: "public" }),
+  const [url, thumbnailUrl] = await Promise.all([
+    saveAsset("photos", `${id}.webp`, displayBuffer),
+    saveAsset("photos", `${id}-thumb.webp`, thumbnailBuffer),
   ])
 
-  return {
-    url: displayResult.url,
-    thumbnailUrl: thumbnailResult.url,
-  }
+  return { url, thumbnailUrl }
 }
 
 export async function uploadAvatar(file: File): Promise<string> {
@@ -50,7 +68,5 @@ export async function uploadAvatar(file: File): Promise<string> {
     .webp({ quality: 80 })
     .toBuffer()
 
-  const result = await put(`avatars/${id}.webp`, avatarBuffer, { access: "public" })
-
-  return result.url
+  return saveAsset("avatars", `${id}.webp`, avatarBuffer)
 }
