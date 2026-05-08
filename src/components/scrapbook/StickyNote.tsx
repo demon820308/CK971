@@ -42,7 +42,7 @@ export function StickyNote({
 }: StickyNoteProps) {
   return (
     <motion.div
-      className={`relative p-5 ${colorMap[color]} shadow-[var(--shadow-sticky)] sticky-fold ${onClick ? "cursor-pointer" : ""} ${className}`}
+      className={`relative p-4 md:p-5 ${colorMap[color]} sticky-fold shadow-[var(--shadow-sticky)] ${onClick ? "cursor-pointer" : ""} ${className}`}
       style={{
         transform: `rotate(${rotation}deg)`,
         ...style,
@@ -53,21 +53,24 @@ export function StickyNote({
       viewport={{ once: true }}
       onClick={onClick}
     >
-      <p className="font-handwritten text-xl text-amber-900 leading-relaxed mb-3">
+      <p className="mb-3 font-handwritten text-lg leading-relaxed text-amber-900 md:text-xl">
         {content}
       </p>
 
       {author && (
-        <p className="font-handwritten text-sm text-amber-700 mb-2">
-          —— {author.name}
+        <p className="mb-2 font-handwritten text-sm text-amber-700">
+          鈥斺€?{author.name}
         </p>
       )}
 
-      <div className="flex items-center gap-3 mt-2">
+      <div className="mt-2 flex items-center gap-3">
         {onLike && (
           <button
-            onClick={(e) => { e.stopPropagation(); onLike?.() }}
-            className="flex items-center gap-1 text-amber-700 text-sm hover:text-red-500 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              onLike?.()
+            }}
+            className="flex items-center gap-1 text-sm text-amber-700 transition-colors hover:text-red-500"
           >
             <Heart
               size={16}
@@ -78,8 +81,11 @@ export function StickyNote({
         )}
         {onReply && (
           <button
-            onClick={(e) => { e.stopPropagation(); onReply?.() }}
-            className="flex items-center gap-1 text-amber-700 text-sm hover:text-amber-900 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation()
+              onReply?.()
+            }}
+            className="flex items-center gap-1 text-sm text-amber-700 transition-colors hover:text-amber-900"
           >
             <MessageCircle size={16} />
             {replyCount > 0 && <span>{replyCount}</span>}

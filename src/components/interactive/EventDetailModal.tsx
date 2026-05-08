@@ -235,19 +235,19 @@ export function EventDetailModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm md:p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="w-full max-w-2xl bg-paper-white rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+          className="flex max-h-[calc(100vh-1rem)] w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl bg-paper-white shadow-xl sm:max-w-2xl md:max-h-[85vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-amber-200">
-            <h2 className="font-brush text-2xl text-amber-800 truncate">
+          <div className="flex items-center justify-between border-b border-amber-200 p-3 md:p-4">
+            <h2 className="truncate font-brush text-xl text-amber-800 md:text-2xl">
               {event.title}
             </h2>
             <div className="flex items-center gap-1">
@@ -271,8 +271,8 @@ export function EventDetailModal({
           </div>
 
           {/* Event info */}
-          <div className="p-4 border-b border-amber-100">
-            <div className="flex flex-wrap items-center gap-4 text-amber-700 mb-2">
+          <div className="border-b border-amber-100 p-3 md:p-4">
+            <div className="mb-2 flex flex-wrap items-center gap-3 text-amber-700 md:gap-4">
               <div className="flex items-center gap-1">
                 <Calendar size={16} />
                 <span className="font-handwritten">
@@ -290,7 +290,7 @@ export function EventDetailModal({
               )}
             </div>
             {event.description && (
-              <p className="font-handwritten text-lg text-amber-800 leading-relaxed whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap font-handwritten text-base leading-relaxed text-amber-800 md:text-lg">
                 {event.description}
               </p>
             )}
@@ -355,7 +355,7 @@ export function EventDetailModal({
           </div>
 
           {/* Comments */}
-          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          <div className="flex-1 space-y-3 overflow-y-auto px-3 py-3 md:px-4">
             <p className="text-sm text-amber-700 font-medium">
               评论 ({commentTotal})
             </p>
@@ -371,7 +371,7 @@ export function EventDetailModal({
           </div>
 
           {/* Comment input */}
-          <div className="p-4 border-t border-amber-200 flex gap-2">
+          <div className="flex gap-2 border-t border-amber-200 p-3 md:p-4">
             <input
               type="text"
               value={newComment}

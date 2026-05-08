@@ -1,3 +1,5 @@
+import fs from "node:fs"
+import path from "node:path"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -23,8 +25,8 @@ type PhotoRecord = {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const cursor = searchParams.get("cursor")
-  const limit = parseInt(searchParams.get("limit") ?? "20")
-  const topLiked = parseInt(searchParams.get("topLiked") ?? "0")
+  const limit = parseInt(searchParams.get("limit") ?? "20", 10)
+  const topLiked = parseInt(searchParams.get("topLiked") ?? "0", 10)
 
   const session = await auth()
   const classId = (session?.user as { classId?: string })?.classId
@@ -58,6 +60,18 @@ function formatPhoto(photo: PhotoRecord, userId?: string) {
   }
 }
 
+function hasLocalPhotoAsset(url: string) {
+  if (!url.startsWith("/uploads/")) return true
+
+  const assetPath = path.join(
+    process.cwd(),
+    "public",
+    url.replace(/^\//, "").replaceAll("/", path.sep)
+  )
+
+  return fs.existsSync(assetPath)
+}
+
 async function getPhotos(
   classId: string,
   cursor: string | null,
@@ -67,62 +81,60 @@ async function getPhotos(
 ) {
   const includeClause = {
     uploader: { select: { id: true, name: true, avatar: true } },
-    likes: userId ? { where: { userId }, select: { id: true } } : false as const,
+    likes: userId ? { where: { userId }, select: { id: true } } : (false as const),
     _count: { select: { likes: true, comments: true } },
   }
 
-  // First page with featured top-liked section
+  const allPhotos = await prisma.photo.findMany({
+    where: { classId },
+    orderBy: { uploadedAt: "desc" },
+    include: includeClause,
+  })
+
+  const availablePhotos = allPhotos.filter((photo) => hasLocalPhotoAsset(photo.url))
+
   if (topLiked > 0 && !cursor) {
-    // Fetch all photos lightweight (id + like count + date) for JS-side sort
-    const allSlim = await prisma.photo.findMany({
-      where: { classId },
-      select: { id: true, uploadedAt: true, _count: { select: { likes: true } } },
-    })
-    // Sort: likes desc, then date desc as tiebreaker
+    const allSlim = availablePhotos.map((photo) => ({
+      id: photo.id,
+      uploadedAt: photo.uploadedAt,
+      _count: { likes: photo._count.likes },
+    }))
+
     allSlim.sort((a, b) =>
       b._count.likes !== a._count.likes
         ? b._count.likes - a._count.likes
         : b.uploadedAt.getTime() - a.uploadedAt.getTime()
     )
-    const featuredIds = allSlim.slice(0, topLiked).map((p) => p.id)
-    const featuredIdSet = new Set(featuredIds)
-    // Rest sorted by newest upload date
-    const restSlim = allSlim
-      .filter((p) => !featuredIdSet.has(p.id))
-      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())
-    const restIds = restSlim.slice(0, limit - topLiked).map((p) => p.id)
-    const hasMore = allSlim.length > limit
 
-    // Fetch full data in parallel
-    const [featuredRaw, restRaw] = await Promise.all([
-      prisma.photo.findMany({ where: { id: { in: featuredIds } }, include: includeClause }),
-      prisma.photo.findMany({ where: { id: { in: restIds } }, include: includeClause }),
-    ])
-    // Re-apply the sorted order
-    const fMap = new Map(featuredRaw.map((p) => [p.id, p]))
-    const rMap = new Map(restRaw.map((p) => [p.id, p]))
-    const featured = featuredIds.map((id) => fMap.get(id)!).filter(Boolean)
-    const rest = restIds.map((id) => rMap.get(id)!).filter(Boolean)
+    const featuredIds = allSlim.slice(0, topLiked).map((photo) => photo.id)
+    const featuredIdSet = new Set(featuredIds)
+    const restIds = allSlim
+      .filter((photo) => !featuredIdSet.has(photo.id))
+      .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime())
+      .slice(0, Math.max(0, limit - topLiked))
+      .map((photo) => photo.id)
+
+    const hasMore = allSlim.length > limit
+    const photoMap = new Map(availablePhotos.map((photo) => [photo.id, photo]))
+    const featured = featuredIds.map((id) => photoMap.get(id)).filter(Boolean)
+    const rest = restIds.map((id) => photoMap.get(id)).filter(Boolean)
 
     return NextResponse.json({
-      items: [...featured, ...rest].map((p) => formatPhoto(p, userId)),
+      items: [...featured, ...rest].map((photo) => formatPhoto(photo as PhotoRecord, userId)),
       nextCursor: hasMore ? allSlim[limit].id : null,
       hasMore,
     })
   }
 
-  // Normal cursor-based pagination
-  const photos = await prisma.photo.findMany({
-    where: { classId },
-    take: limit + 1,
-    cursor: cursor ? { id: cursor } : undefined,
-    orderBy: { uploadedAt: "desc" },
-    include: includeClause,
-  })
-  const hasMore = photos.length > limit
+  const startIndex = cursor
+    ? Math.max(0, availablePhotos.findIndex((photo) => photo.id === cursor) + 1)
+    : 0
+  const page = availablePhotos.slice(startIndex, startIndex + limit + 1)
+  const hasMore = page.length > limit
+
   return NextResponse.json({
-    items: photos.slice(0, limit).map((p) => formatPhoto(p, userId)),
-    nextCursor: hasMore ? photos[limit].id : null,
+    items: page.slice(0, limit).map((photo) => formatPhoto(photo, userId)),
+    nextCursor: hasMore ? page[limit].id : null,
     hasMore,
   })
 }
@@ -141,8 +153,8 @@ export async function POST(request: Request) {
   const formData = await request.formData()
   const file = formData.get("file") as File | null
   const caption = formData.get("caption") as string | null
-  const cropX = parseFloat(formData.get("cropX") as string ?? "50")
-  const cropY = parseFloat(formData.get("cropY") as string ?? "50")
+  const cropX = parseFloat((formData.get("cropX") as string) ?? "50")
+  const cropY = parseFloat((formData.get("cropY") as string) ?? "50")
 
   if (!file) {
     return NextResponse.json({ error: "请选择图片" }, { status: 400 })
@@ -157,7 +169,7 @@ export async function POST(request: Request) {
         caption: caption || null,
         uploaderId: session.user.id,
         classId,
-        rotation: (Math.random() - 0.5) * 16, // -8 to 8 degrees
+        rotation: (Math.random() - 0.5) * 16,
         zIndex: Math.floor(Math.random() * 100),
         cropX,
         cropY,

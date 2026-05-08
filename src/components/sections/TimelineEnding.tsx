@@ -10,20 +10,19 @@ interface TimelineEndingProps {
 
 export function TimelineEnding({ startYear, endYear }: TimelineEndingProps = {}) {
   return (
-    <section className="relative py-20 px-4">
-      <Doodle type="heart" className="absolute top-10 left-[15%]" size={40} />
-      <Doodle type="star" className="absolute bottom-20 right-[15%]" size={35} />
+    <section className="relative px-4 py-16 md:py-20">
+      <Doodle type="heart" className="absolute left-[15%] top-10 hidden md:block" size={40} />
+      <Doodle type="star" className="absolute right-[15%] bottom-20 hidden md:block" size={35} />
 
       <motion.div
-        className="max-w-lg mx-auto text-center"
+        className="mx-auto max-w-lg text-center"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.8 }}
       >
-        {/* Decorative line */}
         <motion.div
-          className="w-px h-20 bg-amber-200/30 mx-auto mb-8"
+          className="mx-auto mb-6 h-16 w-px bg-amber-200/30 md:mb-8 md:h-20"
           initial={{ scaleY: 0 }}
           whileInView={{ scaleY: 1 }}
           viewport={{ once: true }}
@@ -31,7 +30,7 @@ export function TimelineEnding({ startYear, endYear }: TimelineEndingProps = {})
         />
 
         <motion.p
-          className="font-brush text-3xl md:text-4xl text-amber-100 mb-6"
+          className="mb-4 font-brush text-2xl text-amber-100 md:mb-6 md:text-4xl"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -41,7 +40,7 @@ export function TimelineEnding({ startYear, endYear }: TimelineEndingProps = {})
         </motion.p>
 
         <motion.p
-          className="font-brush text-3xl md:text-4xl text-amber-100 mb-8"
+          className="mb-6 font-brush text-2xl text-amber-100 md:mb-8 md:text-4xl"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -51,7 +50,7 @@ export function TimelineEnding({ startYear, endYear }: TimelineEndingProps = {})
         </motion.p>
 
         <motion.div
-          className="w-px h-20 bg-amber-200/30 mx-auto mb-8"
+          className="mx-auto mb-6 h-16 w-px bg-amber-200/30 md:mb-8 md:h-20"
           initial={{ scaleY: 0 }}
           whileInView={{ scaleY: 1 }}
           viewport={{ once: true }}
@@ -59,7 +58,7 @@ export function TimelineEnding({ startYear, endYear }: TimelineEndingProps = {})
         />
 
         <motion.p
-          className="font-handwritten text-xl text-amber-200/70"
+          className="font-handwritten text-lg text-amber-200/70 md:text-xl"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -69,7 +68,7 @@ export function TimelineEnding({ startYear, endYear }: TimelineEndingProps = {})
         </motion.p>
 
         <motion.p
-          className="font-handwritten text-lg text-amber-200/50 mt-2"
+          className="mt-2 font-handwritten text-base text-amber-200/50 md:text-lg"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}

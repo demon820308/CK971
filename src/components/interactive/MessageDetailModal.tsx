@@ -207,19 +207,19 @@ export function MessageDetailModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm md:p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden max-h-[85vh] flex flex-col"
+          className="flex max-h-[calc(100vh-1rem)] w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl bg-white shadow-xl sm:max-w-md md:max-w-md md:max-h-[85vh]"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <h2 className="font-handwritten text-lg text-amber-800">
+          <div className="flex items-center justify-between border-b p-3 md:p-4">
+            <h2 className="font-handwritten text-base text-amber-800 md:text-lg">
               留言详情
             </h2>
             <div className="flex items-center gap-1">
@@ -243,9 +243,9 @@ export function MessageDetailModal({
           </div>
 
           {/* Sticky note */}
-          <div className="p-4">
-            <div className={`p-4 rounded-lg ${stickyBg[message.color]} shadow-md`}>
-              <p className="font-handwritten text-lg text-amber-900 whitespace-pre-wrap break-words">
+          <div className="p-3 md:p-4">
+            <div className={`rounded-lg p-4 ${stickyBg[message.color]} shadow-md`}>
+              <p className="whitespace-pre-wrap break-words font-handwritten text-base text-amber-900 md:text-lg">
                 {message.content}
               </p>
               {message.author && (
@@ -274,7 +274,7 @@ export function MessageDetailModal({
           </div>
 
           {/* Replies */}
-          <div className="flex-1 overflow-y-auto px-4 pb-3 border-t pt-3 space-y-3">
+          <div className="flex-1 space-y-3 overflow-y-auto border-t px-3 pb-3 pt-3 md:px-4">
             <p className="text-sm text-amber-700 font-medium">
               回复 ({replyTotal})
             </p>
@@ -290,7 +290,7 @@ export function MessageDetailModal({
           </div>
 
           {/* Reply input */}
-          <div className="p-4 border-t flex gap-2">
+          <div className="flex gap-2 border-t p-3 md:p-4">
             <input
               type="text"
               value={newReply}

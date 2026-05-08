@@ -237,20 +237,20 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm md:p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
+            className="max-h-[calc(100vh-1.5rem)] w-full max-w-[calc(100vw-1rem)] overflow-y-auto rounded-2xl bg-white shadow-2xl sm:max-w-lg"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-amber-100">
+            <div className="flex items-center justify-between border-b border-amber-100 px-4 pb-3 pt-4 md:px-5 md:pb-4 md:pt-5">
               <div className="flex items-center gap-2">
                 {step === "position" && <Move size={18} className="text-amber-600" />}
-                <h2 className="font-brush text-2xl text-amber-800">{stepLabel}</h2>
+                <h2 className="font-brush text-xl text-amber-800 md:text-2xl">{stepLabel}</h2>
               </div>
               <button
                 onClick={() => {
@@ -264,8 +264,8 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
               </button>
             </div>
 
-            <div className="p-5">
-              {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">{error}</div>}
+            <div className="p-4 md:p-5">
+              {error && <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
               {step === "select" && (
                 <div
@@ -362,7 +362,7 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
               )}
             </div>
 
-            <div className="flex justify-between gap-3 px-5 py-4 border-t border-gray-100 bg-gray-50">
+            <div className="flex flex-col gap-3 border-t border-gray-100 bg-gray-50 px-4 py-3 md:flex-row md:justify-between md:gap-3 md:px-5 md:py-4">
               <button
                 onClick={() => {
                   reset()

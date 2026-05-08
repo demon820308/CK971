@@ -36,51 +36,47 @@ export function PolaroidPhoto({
 
   return (
     <motion.div
-      className="relative cursor-pointer break-inside-avoid mb-6"
+      className="relative mb-6 cursor-pointer break-inside-avoid"
       style={{ transform: `rotate(${rotation}deg)` }}
       whileHover={{ scale: 1.03, zIndex: 50 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}
     >
-      {/* Tape decoration */}
       <div className="tape-strip -top-3 left-1/2 -translate-x-1/2" />
 
-      {/* Polaroid frame */}
-      <div className="bg-white p-3 pb-12 shadow-[var(--shadow-polaroid)]">
+      <div className="bg-white p-2 pb-10 shadow-[var(--shadow-polaroid)] md:p-3 md:pb-12">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
             src={url}
             alt={caption || "照片"}
             fill
-            className="object-cover vintage-filter"
+            className="vintage-filter object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
             style={{ objectPosition: `${cropX}% ${cropY}%` }}
           />
         </div>
 
-        {/* Caption */}
-        <p className="absolute bottom-3 left-3 right-3 text-center font-handwritten text-lg text-amber-800 truncate">
+        <p className="absolute bottom-2 left-2 right-2 truncate text-center font-handwritten text-sm text-amber-800 md:bottom-3 md:left-3 md:right-3 md:text-lg">
           {caption || " "}
         </p>
       </div>
 
-      {/* Hover overlay with actions */}
       {isHovered && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-black/20 flex items-end justify-center pb-14 gap-4"
+          className="absolute inset-0 flex items-end justify-center gap-4 bg-black/20 pb-10 md:pb-14"
         >
           <button
             onClick={(e) => {
               e.stopPropagation()
               onLike?.()
             }}
-            className="flex items-center gap-1 text-white text-sm"
+            className="flex items-center gap-1 text-sm text-white"
           >
             <Heart
-              size={20}
+              size={18}
               className={isLiked ? "fill-red-500 text-red-500" : ""}
             />
             <span>{likeCount}</span>
@@ -90,9 +86,9 @@ export function PolaroidPhoto({
               e.stopPropagation()
               onComment?.()
             }}
-            className="flex items-center gap-1 text-white text-sm"
+            className="flex items-center gap-1 text-sm text-white"
           >
-            <MessageCircle size={20} />
+            <MessageCircle size={18} />
             <span>{commentCount}</span>
           </button>
         </motion.div>

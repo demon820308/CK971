@@ -29,6 +29,7 @@ export function PhotoMemories({ limit, topLiked, maxPages }: PhotoMemoriesProps 
     await fetch(`/api/photos/${id}`, { method: "DELETE" })
     mutate()
   }
+
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const portalTarget = typeof document === "undefined" ? null : document.body
@@ -56,17 +57,16 @@ export function PhotoMemories({ limit, topLiked, maxPages }: PhotoMemoriesProps 
     }
   }, [handleIntersect])
 
-  // Per-column offsets for organic scatter (column = index % 3)
-  const colOffsets = [0, 30, -15]
-
   const renderItems = () =>
     photos.map((photo, index) => {
       const col = index % 3
-      const offsetY = colOffsets[col]
+      const offsetClass = col === 1 ? "md:mt-[30px]" : col === 2 ? "md:mt-[-15px]" : ""
+
       return (
         <motion.div
           key={`photo-${photo.id}`}
-          style={{ marginTop: `${offsetY}px`, position: "relative", zIndex: (index % 2) + 1 }}
+          className={offsetClass}
+          style={{ marginTop: 0, position: "relative", zIndex: (index % 2) + 1 }}
           initial={{ opacity: 0, y: 30, rotate: photo.rotation }}
           whileInView={{ opacity: 1, y: 0, rotate: photo.rotation }}
           viewport={{ once: true }}
@@ -90,73 +90,65 @@ export function PhotoMemories({ limit, topLiked, maxPages }: PhotoMemoriesProps 
     })
 
   return (
-    <section id="photos" className="relative py-8 px-4">
-      <Doodle type="camera" className="absolute top-10 left-[5%]" size={45} />
-      <Doodle type="star" className="absolute top-32 right-[8%]" size={35} />
+    <section id="photos" className="relative px-4 py-10 md:py-8">
+      <Doodle type="camera" className="absolute left-[5%] top-10 hidden md:block" size={45} />
+      <Doodle type="star" className="absolute right-[8%] top-32 hidden md:block" size={35} />
 
-      <div className="max-w-5xl mx-auto">
-        {/* Section label in hand-drawn style */}
+      <div className="mx-auto max-w-5xl">
         <motion.div
-          className="flex items-center gap-2 mb-8"
+          className="mb-6 flex items-center gap-2 md:mb-8"
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
         >
-          <Camera className="text-amber-200/70" size={24} />
-          <h2 className="font-brush text-2xl md:text-3xl text-amber-100">
-            班级瞬间回忆
-          </h2>
-          <span className="font-handwritten text-amber-300 text-lg">→</span>
+          <Camera className="text-amber-200/70" size={20} />
+          <h2 className="font-brush text-xl text-amber-100 md:text-3xl">班级瞬间回忆</h2>
+          <span className="font-handwritten text-base text-amber-300 md:text-lg">→</span>
           {pathname !== "/photos" && (
             <Link
               href="/photos"
-              className="ml-auto font-handwritten text-sm text-amber-400/80 hover:text-amber-300 transition-colors"
+              className="ml-auto text-xs font-handwritten text-amber-400/80 transition-colors hover:text-amber-300 md:text-sm"
             >
               查看全部 →
             </Link>
           )}
         </motion.div>
 
-        {/* Scrapbook grid — row-first so top-liked photos appear in the first visual rows */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-6" style={{ overflow: "visible" }}>
+        <div className="grid grid-cols-1 gap-x-4 gap-y-6 overflow-visible md:grid-cols-2 lg:grid-cols-3">
           {renderItems()}
         </div>
       </div>
 
-      {/* Loading / End indicator */}
       <div ref={sentinelRef} className="py-8 text-center">
         {isLoadingMore && (
-          <p className="font-handwritten text-amber-200/60 text-lg">
-            加载更多回忆...
-          </p>
+          <p className="font-handwritten text-lg text-amber-200/60">加载更多回忆...</p>
         )}
         {isReachingEnd && photos.length > 0 && (
-          <p className="font-handwritten text-amber-200/60 text-lg">
-            所有回忆都在这里了 ✨
-          </p>
+          <p className="font-handwritten text-lg text-amber-200/60">所有回忆都在这里了 ✓</p>
         )}
         {photos.length === 0 && !isLoadingMore && (
           <div className="py-16 text-center">
-            <Camera className="mx-auto text-amber-200/40 mb-4" size={48} />
-            <p className="font-handwritten text-amber-100/60 text-xl">
+            <Camera className="mx-auto mb-4 text-amber-200/40" size={48} />
+            <p className="font-handwritten text-xl text-amber-100/60">
               还没有照片，上传第一张吧
             </p>
           </div>
         )}
       </div>
 
-      {portalTarget && createPortal(
-        <PhotoCommentModal
-          key={selectedPhoto?.id ?? "photo-detail"}
-          photo={selectedPhoto}
-          onClose={() => setSelectedPhoto(null)}
-          onComment={addComment}
-          onLike={toggleLike}
-          onDelete={handleDeletePhoto}
-          currentUserId={session?.user?.id}
-        />,
-        portalTarget
-      )}
+      {portalTarget &&
+        createPortal(
+          <PhotoCommentModal
+            key={selectedPhoto?.id ?? "photo-detail"}
+            photo={selectedPhoto}
+            onClose={() => setSelectedPhoto(null)}
+            onComment={addComment}
+            onLike={toggleLike}
+            onDelete={handleDeletePhoto}
+            currentUserId={session?.user?.id}
+          />,
+          portalTarget
+        )}
     </section>
   )
 }

@@ -16,7 +16,14 @@ export async function GET() {
   }
 
   const memberships = await prisma.classMember.findMany({
-    where: { classId: targetClassId },
+    where: {
+      classId: targetClassId,
+      user: {
+        role: {
+          not: "SUPER_ADMIN",
+        },
+      },
+    },
     include: {
       user: {
         select: { id: true, name: true, avatar: true, bio: true, role: true },
@@ -25,9 +32,9 @@ export async function GET() {
     orderBy: { joinedAt: "asc" },
   })
 
-  const items = memberships.map((m) => ({
-    ...m.user,
-    joinedAt: m.joinedAt.toISOString(),
+  const items = memberships.map((membership) => ({
+    ...membership.user,
+    joinedAt: membership.joinedAt.toISOString(),
   }))
 
   return NextResponse.json({ items })

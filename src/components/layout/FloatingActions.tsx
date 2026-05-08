@@ -22,21 +22,21 @@ export function FloatingActions({
   if (!session?.user) return null
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-4 right-4 z-50 md:bottom-6 md:right-6">
       <AnimatePresence>
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-16 right-0 space-y-3"
+            className="absolute bottom-14 right-0 space-y-2 md:bottom-16 md:space-y-3"
           >
             <button
               onClick={() => {
                 onUploadPhoto?.()
                 setIsOpen(false)
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-full shadow-lg hover:bg-amber-600 transition-colors whitespace-nowrap"
+              className="flex items-center gap-2 whitespace-nowrap rounded-full bg-amber-500 px-3 py-2 text-sm text-white shadow-lg transition-colors hover:bg-amber-600 md:px-4 md:py-2"
             >
               <Camera size={18} />
               <span className="font-handwritten">上传照片</span>
@@ -46,7 +46,7 @@ export function FloatingActions({
                 onWriteMessage?.()
                 setIsOpen(false)
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-full shadow-lg hover:bg-pink-600 transition-colors whitespace-nowrap"
+              className="flex items-center gap-2 whitespace-nowrap rounded-full bg-pink-500 px-3 py-2 text-sm text-white shadow-lg transition-colors hover:bg-pink-600 md:px-4 md:py-2"
             >
               <MessageSquare size={18} />
               <span className="font-handwritten">写留言</span>
@@ -56,7 +56,7 @@ export function FloatingActions({
                 onCreateEvent?.()
                 setIsOpen(false)
               }}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-colors whitespace-nowrap"
+              className="flex items-center gap-2 whitespace-nowrap rounded-full bg-emerald-600 px-3 py-2 text-sm text-white shadow-lg transition-colors hover:bg-emerald-700 md:px-4 md:py-2"
             >
               <CalendarPlus size={18} />
               <span className="font-handwritten">创建活动</span>
@@ -67,9 +67,9 @@ export function FloatingActions({
 
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-amber-500 text-white rounded-full shadow-lg hover:bg-amber-600 transition-colors flex items-center justify-center"
+        className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500 text-white shadow-lg transition-colors hover:bg-amber-600 md:h-14 md:w-14"
       >
-        {isOpen ? <X size={24} /> : <Plus size={24} />}
+        {isOpen ? <X size={22} /> : <Plus size={22} />}
       </button>
     </div>
   )
