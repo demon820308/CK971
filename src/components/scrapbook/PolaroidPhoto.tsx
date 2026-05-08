@@ -75,10 +75,7 @@ export function PolaroidPhoto({
             }}
             className="flex items-center gap-1 text-sm text-white"
           >
-            <Heart
-              size={18}
-              className={isLiked ? "fill-red-500 text-red-500" : ""}
-            />
+            <Heart size={18} className={isLiked ? "fill-red-500 text-red-500" : ""} />
             <span>{likeCount}</span>
           </button>
           <button

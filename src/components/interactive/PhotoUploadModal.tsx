@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Upload, Image as ImageIcon, Move } from "lucide-react"
+import { toast } from "@/lib/toast"
 
 type Step = "select" | "position" | "caption"
 
@@ -121,12 +122,15 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
     reader.readAsDataURL(selectedFile)
   }, [])
 
-  const handleDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault()
-    setIsDragOver(false)
-    const file = event.dataTransfer.files[0]
-    if (file) handleFile(file)
-  }, [handleFile])
+  const handleDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault()
+      setIsDragOver(false)
+      const file = event.dataTransfer.files[0]
+      if (file) handleFile(file)
+    },
+    [handleFile]
+  )
 
   const applyDelta = (dx: number, dy: number) => {
     if (natSize.w === 0) return
@@ -219,7 +223,8 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
 
       onSuccess?.()
       onClose()
-      window.location.reload()
+      toast.success("照片已发布")
+      window.setTimeout(() => window.location.reload(), 350)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "上传失败")
     } finally {
@@ -228,7 +233,11 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
   }
 
   const stepLabel =
-    step === "select" ? "上传照片" : step === "position" ? "调整缩略图显示" : "添加说明"
+    step === "select"
+      ? "上传照片"
+      : step === "position"
+        ? "调整缩略图显示"
+        : "添加说明"
 
   return (
     <AnimatePresence>
@@ -237,14 +246,14 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-3 backdrop-blur-sm md:p-4"
+          className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 p-2 backdrop-blur-sm sm:p-3 md:p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="max-h-[calc(100vh-1.5rem)] w-full max-w-[calc(100vw-1rem)] overflow-y-auto rounded-2xl bg-white shadow-2xl sm:max-w-lg"
+            className="max-h-[calc(100dvh-1rem)] w-full max-w-[calc(100vw-0.75rem)] overflow-y-auto rounded-2xl bg-white shadow-2xl sm:max-w-lg"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-amber-100 px-4 pb-3 pt-4 md:px-5 md:pb-4 md:pt-5">
@@ -257,7 +266,7 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
                   reset()
                   onClose()
                 }}
-                className="text-amber-400 hover:text-amber-600 transition-colors"
+                className="text-amber-400 transition-colors hover:text-amber-600"
                 aria-label="关闭"
               >
                 <X size={20} />
@@ -269,7 +278,7 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
 
               {step === "select" && (
                 <div
-                  className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+                  className={`cursor-pointer rounded-xl border-2 border-dashed p-7 text-center transition-colors sm:p-8 ${
                     isDragOver ? "border-amber-400 bg-amber-50" : "border-amber-200 hover:border-amber-400"
                   }`}
                   onClick={() => fileInputRef.current?.click()}
@@ -281,8 +290,12 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
                   onDrop={handleDrop}
                 >
                   <Upload className="mx-auto mb-3 text-amber-500" size={38} />
-                  <p className="font-handwritten text-amber-700 text-lg mb-1">点击或拖拽上传</p>
-                  <p className="text-sm text-amber-500/70">支持 JPG、PNG、WebP，最大 8MB</p>
+                  <p className="mb-1 font-handwritten text-lg text-amber-700">
+                    点击或拖拽上传
+                  </p>
+                  <p className="text-sm text-amber-500/70">
+                    支持 JPG、PNG、WebP，最大 8MB
+                  </p>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -298,13 +311,12 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
 
               {step === "position" && preview && (
                 <div>
-                  <p className="text-sm text-amber-600 mb-2 flex items-center gap-1.5">
+                  <p className="mb-2 flex items-center gap-1.5 text-sm text-amber-600">
                     <Move size={14} /> 拖动图片，选择要显示的区域
                   </p>
                   <div
                     ref={containerRef}
-                    className="relative w-full overflow-hidden rounded-xl bg-gray-200 cursor-grab active:cursor-grabbing select-none"
-                    style={{ aspectRatio: "4/3" }}
+                    className="relative aspect-[4/3] w-full select-none overflow-hidden rounded-xl bg-gray-200 cursor-grab active:cursor-grabbing"
                     onMouseDown={onMouseDown}
                     onMouseMove={onMouseMove}
                     onMouseUp={onMouseUp}
@@ -317,43 +329,44 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
                       src={preview}
                       alt="调整缩略图显示"
                       draggable={false}
-                      className="w-full h-full"
+                      className="block h-full w-full"
                       style={{
                         objectFit: "cover",
                         objectPosition: `${posX}% ${posY}%`,
                         pointerEvents: "none",
-                        display: "block",
                       }}
                     />
-                    <div className="absolute inset-0 border-2 border-amber-400/60 rounded-xl pointer-events-none" />
+                    <div className="pointer-events-none absolute inset-0 rounded-xl border-2 border-amber-400/60" />
                   </div>
                 </div>
               )}
 
               {step === "caption" && (
                 <div className="space-y-4">
-                  <div className="relative rounded-xl overflow-hidden bg-gray-100">
+                  <div className="relative overflow-hidden rounded-xl bg-gray-100">
                     <img
                       src={croppedPreview ?? ""}
                       alt="照片预览"
-                      className="w-full object-cover aspect-[4/3]"
+                      className="aspect-[4/3] w-full object-cover"
                     />
                     <button
                       onClick={() => setStep("position")}
-                      className="absolute top-2 right-2 p-1.5 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+                      className="absolute right-2 top-2 rounded-full bg-black/50 p-1.5 text-white transition-colors hover:bg-black/70"
                       title="重新调整"
                     >
                       <Move size={15} />
                     </button>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-amber-700 mb-1">写点说明</label>
+                    <label className="mb-1 block text-sm font-medium text-amber-700">
+                      写点说明
+                    </label>
                     <input
                       type="text"
                       value={caption}
                       onChange={(event) => setCaption(event.target.value)}
                       placeholder="给这张照片写个说明"
-                      className="w-full px-4 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-300 font-handwritten text-amber-900"
+                      className="w-full rounded-lg border border-amber-200 px-4 py-2 font-handwritten text-amber-900 outline-none focus:ring-2 focus:ring-amber-300"
                       maxLength={100}
                       autoFocus
                     />
@@ -362,13 +375,13 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
               )}
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-gray-100 bg-gray-50 px-4 py-3 md:flex-row md:justify-between md:gap-3 md:px-5 md:py-4">
+            <div className="flex flex-col gap-3 border-t border-gray-100 bg-gray-50 px-4 py-3 sm:flex-row sm:justify-between sm:gap-3 md:px-5 md:py-4">
               <button
                 onClick={() => {
                   reset()
                   onClose()
                 }}
-                className="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                className="rounded-lg px-4 py-2 text-gray-500 transition-colors hover:bg-gray-100"
               >
                 取消
               </button>
@@ -377,13 +390,13 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
                   <>
                     <button
                       onClick={skipPosition}
-                      className="px-4 py-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors text-sm"
+                      className="rounded-lg px-4 py-2 text-sm text-amber-600 transition-colors hover:bg-amber-50"
                     >
                       跳过
                     </button>
                     <button
                       onClick={confirmPosition}
-                      className="flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors"
+                      className="flex items-center gap-2 rounded-lg bg-amber-500 px-5 py-2 text-white transition-colors hover:bg-amber-600"
                     >
                       <Move size={15} /> 确认
                     </button>
@@ -393,11 +406,11 @@ export function PhotoUploadModal({ isOpen, onClose, onSuccess }: PhotoUploadModa
                   <button
                     onClick={handleSubmit}
                     disabled={!originalFile || isUploading}
-                    className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg transition-colors disabled:opacity-50"
+                    className="flex items-center gap-2 rounded-lg bg-amber-500 px-6 py-2 text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
                   >
                     {isUploading ? (
                       <>
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         上传中...
                       </>
                     ) : (

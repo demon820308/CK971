@@ -12,7 +12,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="fixed top-3 left-3 right-3 z-50 flex flex-wrap items-center justify-center gap-2 md:top-4 md:right-4 md:left-auto md:max-w-xs md:justify-end md:gap-3">
+    <nav className="fixed top-3 left-3 right-3 z-50 flex max-w-[calc(100vw-1.5rem)] flex-wrap items-center justify-center gap-2 md:top-4 md:right-4 md:left-auto md:max-w-xs md:justify-end md:gap-3">
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         className="rounded-full bg-amber-100/15 px-2.5 py-1 text-xs font-handwritten text-amber-100 backdrop-blur-sm transition-colors hover:bg-amber-100/25 md:px-3 md:py-1.5 md:text-sm"

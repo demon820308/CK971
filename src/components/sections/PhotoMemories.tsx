@@ -124,7 +124,9 @@ export function PhotoMemories({ limit, topLiked, maxPages }: PhotoMemoriesProps 
           <p className="font-handwritten text-lg text-amber-200/60">加载更多回忆...</p>
         )}
         {isReachingEnd && photos.length > 0 && (
-          <p className="font-handwritten text-lg text-amber-200/60">所有回忆都在这里了 ✓</p>
+          <p className="font-handwritten text-lg text-amber-200/60">
+            所有回忆都在这里了
+          </p>
         )}
         {photos.length === 0 && !isLoadingMore && (
           <div className="py-16 text-center">

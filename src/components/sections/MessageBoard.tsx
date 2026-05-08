@@ -30,10 +30,15 @@ interface MessageBoardProps {
   maxPages?: number
 }
 
-export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLiked, maxPages }: MessageBoardProps) {
-  const { messages, mutate, toggleLike, addReply, loadMore, isLoadingMore, isReachingEnd } = useMessages(
-    limit || topLiked || maxPages ? { limit, topLiked, maxPages } : {}
-  )
+export function MessageBoard({
+  composeOpen = false,
+  onCloseCompose,
+  limit,
+  topLiked,
+  maxPages,
+}: MessageBoardProps) {
+  const { messages, mutate, toggleLike, addReply, loadMore, isLoadingMore, isReachingEnd } =
+    useMessages(limit || topLiked || maxPages ? { limit, topLiked, maxPages } : {})
   const pathname = usePathname()
   const { data: session } = useSession()
   const [newMessage, setNewMessage] = useState("")
@@ -77,110 +82,118 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
   }
 
   return (
-    <section id="messages" className="relative py-16 px-4">
-      <Doodle type="smiley" className="absolute top-10 right-[10%]" size={40} />
-      <Doodle type="arrow" className="absolute bottom-20 left-[8%]" size={35} />
+    <section id="messages" className="relative px-4 py-12 md:py-16">
+      <Doodle type="smiley" className="absolute right-[10%] top-10 hidden md:block" size={40} />
+      <Doodle type="arrow" className="absolute bottom-20 left-[8%] hidden md:block" size={35} />
 
       <motion.div
-        className="max-w-3xl mx-auto flex items-center gap-3 mb-10"
+        className="mx-auto mb-8 flex max-w-3xl items-center gap-3 md:mb-10"
         initial={{ opacity: 0, x: -20 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
       >
         <MessageSquare className="text-amber-200/70" size={24} />
-        <h2 className="font-brush text-2xl md:text-3xl text-amber-100">
+        <h2 className="font-brush text-2xl text-amber-100 md:text-3xl">
           大家的留言
         </h2>
-        <span className="font-handwritten text-amber-300 text-lg">☺</span>
+        <span className="font-handwritten text-lg text-amber-300">★</span>
         {pathname !== "/messages" && (
           <Link
             href="/messages"
-            className="ml-auto font-handwritten text-sm text-amber-400/80 hover:text-amber-300 transition-colors"
+            className="ml-auto font-handwritten text-sm text-amber-400/80 transition-colors hover:text-amber-300"
           >
             查看全部 →
           </Link>
         )}
       </motion.div>
 
-      {/* Message compose modal via portal */}
-      {portalTarget && createPortal(
-        <AnimatePresence>
-          {composeOpen && (
-            <motion.div
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onCloseCompose}
-            >
+      {portalTarget &&
+        createPortal(
+          <AnimatePresence>
+            {composeOpen && (
               <motion.div
-                className="relative w-full max-w-md"
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onCloseCompose}
               >
-                {/* Masking tape top */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-24 h-6 rounded-[3px] z-10 border border-amber-900/20"
-                  style={{ background: "rgba(255,220,140,0.55)", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }} />
-
-                <div className={`relative p-6 ${stickyBg[selectedColor]} shadow-[0_8px_32px_rgba(0,0,0,0.45)] sticky-fold`}
-                  style={{ borderRadius: "2px" }}>
-                  <button
-                    onClick={onCloseCompose}
-                    className="absolute top-2 right-2 text-amber-800/50 hover:text-amber-900 transition-colors"
-                    aria-label="关闭"
-                  >
-                    <X size={18} />
-                  </button>
-
-                  <textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="写下你的留言..."
-                    autoFocus
-                    className="w-full bg-transparent font-handwritten text-xl text-amber-900 placeholder:text-amber-700/40 resize-none outline-none min-h-[130px]"
-                    maxLength={200}
+                <motion.div
+                  className="relative w-full max-w-[calc(100vw-1rem)] sm:max-w-md"
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    className="absolute -top-3 left-1/2 z-10 h-6 w-24 -translate-x-1/2 rounded-[3px] border border-amber-900/20"
+                    style={{
+                      background: "rgba(255,220,140,0.55)",
+                      boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                    }}
                   />
 
-                  <div className="flex items-center justify-between mt-4 pt-3 border-t border-amber-900/10">
-                    <div className="flex gap-2 items-center">
-                      <span className="font-handwritten text-amber-800/50 text-xs mr-1">颜色</span>
-                      {colors.map((color) => (
-                        <button
-                          key={color}
-                          onClick={() => setSelectedColor(color)}
-                          className={`w-5 h-5 rounded-full ${stickyBg[color]} border-2 transition-transform ${
-                            selectedColor === color
-                              ? "border-amber-800 scale-125"
-                              : "border-amber-800/30 hover:scale-110"
-                          }`}
-                        />
-                      ))}
-                    </div>
-
+                  <div
+                    className={`relative rounded-[2px] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.45)] ${stickyBg[selectedColor]} sticky-fold sm:p-6`}
+                  >
                     <button
-                      onClick={handleSubmit}
-                      disabled={!newMessage.trim() || isSubmitting}
-                      className="flex items-center gap-2 px-4 py-1.5 bg-amber-700 text-amber-50 rounded hover:bg-amber-800 transition-colors disabled:opacity-40 font-handwritten text-sm shadow-sm"
+                      onClick={onCloseCompose}
+                      className="absolute right-2 top-2 text-amber-800/50 transition-colors hover:text-amber-900"
+                      aria-label="关闭"
                     >
-                      <Send size={14} />
-                      {isSubmitting ? "发布中..." : "贴上去"}
+                      <X size={18} />
                     </button>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        portalTarget
-      )}
 
-      {/* Notes board (desktop) — dark navy board with tape-crossed notes */}
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="写下你的留言..."
+                      autoFocus
+                      className="min-h-[120px] w-full resize-none bg-transparent font-handwritten text-lg text-amber-900 outline-none placeholder:text-amber-700/40 sm:min-h-[130px] sm:text-xl"
+                      maxLength={200}
+                    />
+
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-amber-900/10 pt-3">
+                      <div className="flex items-center gap-2">
+                        <span className="mr-1 font-handwritten text-xs text-amber-800/50">
+                          颜色
+                        </span>
+                        {colors.map((color) => (
+                          <button
+                            key={color}
+                            onClick={() => setSelectedColor(color)}
+                            className={`h-5 w-5 rounded-full border-2 transition-transform ${
+                              stickyBg[color]
+                            } ${
+                              selectedColor === color
+                                ? "scale-125 border-amber-800"
+                                : "border-amber-800/30 hover:scale-110"
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={handleSubmit}
+                        disabled={!newMessage.trim() || isSubmitting}
+                        className="flex items-center gap-2 rounded bg-amber-700 px-4 py-1.5 font-handwritten text-sm text-amber-50 shadow-sm transition-colors hover:bg-amber-800 disabled:opacity-40"
+                      >
+                        <Send size={14} />
+                        {isSubmitting ? "发布中..." : "贴上去"}
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          portalTarget
+        )}
+
       {messages.length > 0 && (
-        <div className="hidden md:block max-w-6xl mx-auto">
+        <div className="mx-auto hidden max-w-6xl md:block">
           <div
-            className="relative rounded-2xl p-9 overflow-hidden"
+            className="relative overflow-hidden rounded-2xl p-9"
             style={{
               background: "rgba(38, 22, 10, 0.72)",
               boxShadow:
@@ -189,7 +202,7 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
             }}
           >
             <div
-              className="absolute inset-0 pointer-events-none"
+              className="pointer-events-none absolute inset-0"
               style={{
                 background:
                   "radial-gradient(circle at 30% 30%, rgba(255,255,255,.02) 0%, transparent 50%)",
@@ -197,19 +210,14 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
             />
             <div className="relative grid grid-cols-5 gap-[18px]">
               {messages.map((msg, i) => {
-                // Mimic reference: alternating tilt + slight vertical offset
                 const tiltMap = [-3, 2, -2, 3, 1]
                 const offsetMap = [0, 12, 0, 8, 0]
                 const tilt = tiltMap[i % 5]
                 const marginTop = offsetMap[i % 5]
                 return (
-                  <div
-                    key={msg.id}
-                    className="min-w-0"
-                    style={{ marginTop }}
-                  >
+                  <div key={msg.id} className="min-w-0" style={{ marginTop }}>
                     <motion.div
-                      className={`relative px-3 pt-[18px] pb-[18px] rounded-lg ${stickyBg[msg.color]} shadow-[0_4px_15px_rgba(0,0,0,.2)] cursor-pointer`}
+                      className={`relative cursor-pointer rounded-lg px-3 pb-[18px] pt-[18px] shadow-[0_4px_15px_rgba(0,0,0,.2)] ${stickyBg[msg.color]}`}
                       style={{ transform: `rotate(${tilt}deg)` }}
                       whileHover={{ y: -5, rotate: 0, zIndex: 20 }}
                       initial={{ opacity: 0, y: 20 }}
@@ -217,29 +225,31 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
                       viewport={{ once: true }}
                       onClick={() => setSelectedMessage(msg)}
                     >
-                      {/* Thumbtack */}
                       <span
-                        className="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full z-10"
+                        className="absolute -top-3 left-1/2 z-10 h-5 w-5 -translate-x-1/2 rounded-full"
                         style={{
                           background: "radial-gradient(circle at 38% 32%, #ff8a80, #c62828)",
                           boxShadow: "0 3px 8px rgba(0,0,0,0.45), inset 0 1px 2px rgba(255,255,255,0.35)",
                         }}
                       />
 
-                      <p className="font-handwritten text-[15px] text-amber-900 leading-[1.5] whitespace-pre-wrap break-words min-h-[80px]">
+                      <p className="min-h-[80px] whitespace-pre-wrap break-words font-handwritten text-[15px] leading-[1.5] text-amber-900">
                         {msg.content}
                       </p>
 
                       {msg.author && (
-                        <p className="text-right mt-2 text-[12px] text-stone-600">
-                          —— {msg.author.name}
+                        <p className="mt-2 text-right text-[12px] text-stone-600">
+                          — {msg.author.name}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between gap-2 mt-2">
+                      <div className="mt-2 flex items-center justify-between gap-2">
                         <button
-                          onClick={(e) => { e.stopPropagation(); toggleLike(msg.id) }}
-                          className="flex items-center gap-1 text-stone-500 text-xs hover:text-red-500 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            toggleLike(msg.id)
+                          }}
+                          className="flex items-center gap-1 text-xs text-stone-500 transition-colors hover:text-red-500"
                         >
                           <Heart
                             size={13}
@@ -248,8 +258,11 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
                           {msg.likeCount > 0 && <span>{msg.likeCount}</span>}
                         </button>
                         <button
-                          onClick={(e) => { e.stopPropagation(); setSelectedMessage(msg) }}
-                          className="text-stone-600 text-xs hover:text-stone-900 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedMessage(msg)
+                          }}
+                          className="text-xs text-stone-600 transition-colors hover:text-stone-900"
                         >
                           回复{msg.replyCount ? ` (${msg.replyCount})` : ""}
                         </button>
@@ -263,8 +276,7 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
         </div>
       )}
 
-      {/* Mobile: flow layout */}
-      <div className="md:hidden space-y-4">
+      <div className="space-y-4 md:hidden">
         {messages.map((msg) => (
           <div key={msg.id}>
             <StickyNote
@@ -285,45 +297,46 @@ export function MessageBoard({ composeOpen = false, onCloseCompose, limit, topLi
 
       {messages.length === 0 && (
         <div className="py-16 text-center">
-          <MessageSquare className="mx-auto text-amber-200/40 mb-4" size={48} />
-          <p className="font-handwritten text-amber-100/60 text-xl">
+          <MessageSquare className="mx-auto mb-4 text-amber-200/40" size={48} />
+          <p className="text-xl font-handwritten text-amber-100/60">
             还没有留言，写下第一句吧
           </p>
         </div>
       )}
 
       {messages.length > 0 && (
-        <div className="text-center mt-6">
+        <div className="mt-6 text-center">
           {!isReachingEnd ? (
             <button
               onClick={loadMore}
               disabled={isLoadingMore}
-              className="px-5 py-2 bg-amber-100/15 text-amber-100 rounded-full hover:bg-amber-100/25 transition-colors font-handwritten disabled:opacity-50"
+              className="rounded-full bg-amber-100/15 px-5 py-2 font-handwritten text-amber-100 transition-colors hover:bg-amber-100/25 disabled:opacity-50"
             >
               {isLoadingMore ? "加载中..." : "加载更多"}
             </button>
           ) : (
-            <p className="font-handwritten text-amber-200/50 text-sm">
+            <p className="text-sm font-handwritten text-amber-200/50">
               所有留言都在这里了
             </p>
           )}
         </div>
       )}
 
-      {portalTarget && createPortal(
-        <MessageDetailModal
-          key={selectedMessage?.id ?? "message-detail"}
-          message={selectedMessage}
-          onClose={() => setSelectedMessage(null)}
-          onLike={toggleLike}
-          onReply={async (id, content, parentId) => {
-            await addReply(id, content, parentId)
-          }}
-          onDelete={handleDeleteMessage}
-          currentUserId={session?.user?.id}
-        />,
-        portalTarget
-      )}
+      {portalTarget &&
+        createPortal(
+          <MessageDetailModal
+            key={selectedMessage?.id ?? "message-detail"}
+            message={selectedMessage}
+            onClose={() => setSelectedMessage(null)}
+            onLike={toggleLike}
+            onReply={async (id, content, parentId) => {
+              await addReply(id, content, parentId)
+            }}
+            onDelete={handleDeleteMessage}
+            currentUserId={session?.user?.id}
+          />,
+          portalTarget
+        )}
     </section>
   )
 }

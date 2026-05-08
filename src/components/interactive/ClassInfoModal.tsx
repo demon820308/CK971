@@ -49,14 +49,14 @@ export function ClassInfoModal({ isOpen, onClose, classInfo }: ClassInfoModalPro
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm md:p-4"
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-3 md:p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="flex max-h-[calc(100vh-1rem)] w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl bg-paper-white shadow-xl sm:max-w-md md:max-h-[85vh]"
+            className="flex max-h-[calc(100dvh-1rem)] w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl bg-paper-white shadow-xl sm:max-w-md md:max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-amber-200 p-3 md:p-4">
@@ -76,9 +76,7 @@ export function ClassInfoModal({ isOpen, onClose, classInfo }: ClassInfoModalPro
                 {classInfo.name ? ` ${classInfo.name}` : ""}
               </p>
               {classInfo.schoolName && (
-                <p className="font-handwritten text-amber-700">
-                  {classInfo.schoolName}
-                </p>
+                <p className="font-handwritten text-amber-700">{classInfo.schoolName}</p>
               )}
               {classInfo.description && (
                 <p className="font-handwritten text-sm text-amber-700">
@@ -106,15 +104,13 @@ export function ClassInfoModal({ isOpen, onClose, classInfo }: ClassInfoModalPro
                 <Users size={18} />
                 <span className="font-medium">成员 ({members.length})</span>
               </div>
-              {isLoading && (
-                <p className="py-4 text-center text-gray-400">加载中...</p>
-              )}
+              {isLoading && <p className="py-4 text-center text-gray-400">加载中...</p>}
               {!isLoading && members.length === 0 && (
                 <p className="py-4 text-center font-handwritten text-gray-400">
                   还没有成员
                 </p>
               )}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {members.map((member) => (
                   <div
                     key={member.id}

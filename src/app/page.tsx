@@ -25,18 +25,15 @@ export default function HomePage() {
   return (
     <>
       <ScrapbookBackdrop />
-
       <Navbar />
 
       {classInfo && (
         <button
           onClick={() => setShowClassModal(true)}
-          className="fixed left-4 right-20 top-14 z-20 text-left text-white/90 drop-shadow-lg transition-colors hover:text-white md:left-[2.8%] md:right-[60%] md:top-[2.7vw]"
+          className="fixed left-3 right-3 top-16 z-20 max-w-[calc(100vw-1.5rem)] text-left text-white/90 drop-shadow-lg transition-colors hover:text-white md:left-[2.8%] md:right-[60%] md:top-[2.7vw]"
           title="查看班级信息"
         >
-          <p className="font-brush text-lg leading-snug md:text-xl">
-            {classInfo.name}
-          </p>
+          <p className="font-brush text-lg leading-snug md:text-xl">{classInfo.name}</p>
           {classInfo.schoolName && (
             <p className="mt-0.5 font-handwritten text-xs text-white/70 md:text-sm">
               {classInfo.schoolName}

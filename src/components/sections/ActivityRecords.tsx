@@ -34,17 +34,17 @@ export function ActivityRecords({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const portalTarget = typeof document === "undefined" ? null : document.body
-
-  const handleDeleteEvent = async (id: string) => {
-    await fetch(`/api/events/${id}`, { method: "DELETE" })
-    mutate()
-  }
   const [form, setForm] = useState({
     title: "",
     description: "",
     location: "",
     eventTime: "",
   })
+
+  const handleDeleteEvent = async (id: string) => {
+    await fetch(`/api/events/${id}`, { method: "DELETE" })
+    mutate()
+  }
 
   const handleSubmit = async () => {
     if (!form.title.trim() || !form.eventTime || isSubmitting) return
@@ -79,11 +79,11 @@ export function ActivityRecords({
   }
 
   return (
-    <section id="events" className="relative py-16 px-4">
-      <Doodle type="arrow" className="absolute top-20 right-[10%]" size={40} />
-      <Doodle type="music" className="absolute bottom-20 left-[8%]" size={35} />
+    <section id="events" className="relative px-4 py-12 md:py-16">
+      <Doodle type="arrow" className="absolute right-[10%] top-20 hidden md:block" size={40} />
+      <Doodle type="music" className="absolute bottom-20 left-[8%] hidden md:block" size={35} />
 
-      <div className="max-w-3xl mx-auto flex items-center mb-10">
+      <div className="mx-auto mb-8 max-w-3xl md:mb-10">
         <motion.div
           className="flex w-full items-center gap-3"
           initial={{ opacity: 0, x: -20 }}
@@ -91,13 +91,13 @@ export function ActivityRecords({
           viewport={{ once: true }}
         >
           <Calendar className="text-amber-200/70" size={28} />
-          <h2 className="font-brush text-3xl md:text-4xl text-amber-100">
+          <h2 className="font-brush text-3xl text-amber-100 md:text-4xl">
             活动报名
           </h2>
           {pathname !== "/events" && (
             <Link
               href="/events"
-              className="ml-auto font-handwritten text-sm text-amber-400/80 hover:text-amber-300 transition-colors"
+              className="ml-auto font-handwritten text-sm text-amber-400/80 transition-colors hover:text-amber-300"
             >
               查看全部 →
             </Link>
@@ -105,97 +105,92 @@ export function ActivityRecords({
         </motion.div>
       </div>
 
-      {/* Event creation modal via portal */}
-      {portalTarget && createPortal(
-        <AnimatePresence>
-          {composeOpen && (
-            <motion.div
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={onCloseCompose}
-            >
+      {portalTarget &&
+        createPortal(
+          <AnimatePresence>
+            {composeOpen && (
               <motion.div
-                className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden"
-                initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                onClick={(e) => e.stopPropagation()}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-4"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onCloseCompose}
               >
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-amber-100">
-                  <h3 className="font-brush text-2xl text-amber-800">
-                    创建活动
-                  </h3>
-                  <button
-                    onClick={onCloseCompose}
-                    className="text-amber-400 hover:text-amber-600 transition-colors"
-                    aria-label="关闭"
-                  >
-                    <X size={20} />
-                  </button>
-                </div>
+                <motion.div
+                  className="relative w-full max-h-[calc(100dvh-1rem)] max-w-[calc(100vw-1rem)] overflow-hidden rounded-2xl bg-white shadow-2xl sm:max-w-lg"
+                  initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                  animate={{ scale: 1, opacity: 1, y: 0 }}
+                  exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between border-b border-amber-100 px-4 pb-3 pt-4 sm:px-6 sm:pt-5">
+                    <h3 className="font-brush text-2xl text-amber-800">创建活动</h3>
+                    <button
+                      onClick={onCloseCompose}
+                      className="text-amber-400 transition-colors hover:text-amber-600"
+                      aria-label="关闭"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
 
-                {/* Form body */}
-                <div className="px-6 py-5 space-y-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-3 px-4 py-4 sm:px-6 sm:py-5">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <input
+                        type="text"
+                        placeholder="活动名称"
+                        value={form.title}
+                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                        className="rounded-lg border border-amber-200 px-4 py-2.5 font-handwritten text-amber-900 outline-none transition-colors placeholder:text-amber-400/60 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                        maxLength={50}
+                      />
+                      <input
+                        type="datetime-local"
+                        value={form.eventTime}
+                        onChange={(e) => setForm({ ...form, eventTime: e.target.value })}
+                        className="rounded-lg border border-amber-200 px-4 py-2.5 font-handwritten text-amber-900 outline-none transition-colors focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                      />
+                    </div>
                     <input
                       type="text"
-                      placeholder="活动名称"
-                      value={form.title}
-                      onChange={(e) => setForm({ ...form, title: e.target.value })}
-                      className="px-4 py-2.5 rounded-lg font-handwritten text-amber-900 placeholder:text-amber-400/60 outline-none border border-amber-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-colors"
-                      maxLength={50}
+                      placeholder="地点（可选）"
+                      value={form.location}
+                      onChange={(e) => setForm({ ...form, location: e.target.value })}
+                      className="w-full rounded-lg border border-amber-200 px-4 py-2.5 font-handwritten text-amber-900 outline-none transition-colors placeholder:text-amber-400/60 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                      maxLength={100}
                     />
-                    <input
-                      type="datetime-local"
-                      value={form.eventTime}
-                      onChange={(e) => setForm({ ...form, eventTime: e.target.value })}
-                      className="px-4 py-2.5 rounded-lg font-handwritten text-amber-900 outline-none border border-amber-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-colors"
+                    <textarea
+                      placeholder="活动描述（可选）"
+                      value={form.description}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                      className="min-h-[96px] w-full resize-none rounded-lg border border-amber-200 px-4 py-2.5 font-handwritten text-amber-900 outline-none transition-colors placeholder:text-amber-400/60 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+                      maxLength={500}
                     />
                   </div>
-                  <input
-                    type="text"
-                    placeholder="地点（可选）"
-                    value={form.location}
-                    onChange={(e) => setForm({ ...form, location: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg font-handwritten text-amber-900 placeholder:text-amber-400/60 outline-none border border-amber-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-colors"
-                    maxLength={100}
-                  />
-                  <textarea
-                    placeholder="活动描述（可选）"
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-lg font-handwritten text-amber-900 placeholder:text-amber-400/60 outline-none border border-amber-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100 resize-none min-h-[80px] transition-colors"
-                    maxLength={500}
-                  />
-                </div>
 
-                {/* Footer */}
-                <div className="px-6 pb-6">
-                  <button
-                    onClick={handleSubmit}
-                    disabled={!form.title.trim() || !form.eventTime || isSubmitting}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-handwritten transition-colors disabled:opacity-50"
-                  >
-                    <Send size={15} />
-                    {isSubmitting ? "提交中..." : "发布活动"}
-                  </button>
-                </div>
+                  <div className="border-t border-gray-100 px-4 pb-4 pt-3 sm:px-6 sm:pb-6">
+                    <button
+                      onClick={handleSubmit}
+                      disabled={!form.title.trim() || !form.eventTime || isSubmitting}
+                      className="flex items-center gap-2 rounded-lg bg-amber-500 px-6 py-2.5 font-handwritten text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                    >
+                      <Send size={15} />
+                      {isSubmitting ? "发布中..." : "发布活动"}
+                    </button>
+                  </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        portalTarget
-      )}
+            )}
+          </AnimatePresence>,
+          portalTarget
+        )}
 
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="mx-auto max-w-3xl space-y-6 md:space-y-8">
         {events.map((event, index) => (
           <motion.div
             key={event.id}
             onClick={() => setSelectedEvent(event)}
-            className="relative bg-paper-white/90 p-6 rounded-lg shadow-lg torn-edge cursor-pointer hover:shadow-xl transition-shadow"
+            className="relative cursor-pointer rounded-lg bg-paper-white/90 p-5 shadow-lg transition-shadow hover:shadow-xl md:p-6 torn-edge"
             style={{
               transform: `rotate(${(index % 2 === 0 ? 1 : -1) * 1.5}deg)`,
             }}
@@ -206,11 +201,11 @@ export function ActivityRecords({
           >
             <MaskingTape position="top-right" rotation={20} />
 
-            <h3 className="font-brush text-2xl text-amber-800 mb-2">
+            <h3 className="mb-2 font-brush text-2xl text-amber-800">
               {event.title}
             </h3>
 
-            <div className="flex items-center gap-4 text-amber-600 mb-3">
+            <div className="mb-3 flex items-center gap-4 text-amber-600">
               <div className="flex items-center gap-1">
                 <Calendar size={16} />
                 <span className="font-handwritten">
@@ -226,7 +221,7 @@ export function ActivityRecords({
             </div>
 
             {event.description && (
-              <p className="font-handwritten text-lg text-amber-700 leading-relaxed mb-3">
+              <p className="mb-3 font-handwritten text-lg leading-relaxed text-amber-700">
                 {event.description}
               </p>
             )}
@@ -245,7 +240,7 @@ export function ActivityRecords({
                 </span>
               </div>
               {event.isAttending && (
-                <span className="flex items-center gap-1 text-green-600 text-xs font-handwritten">
+                <span className="flex items-center gap-1 text-xs font-handwritten text-green-600">
                   <CheckCircle2 size={14} />
                   已报名
                 </span>
@@ -257,42 +252,43 @@ export function ActivityRecords({
 
       {events.length === 0 && (
         <div className="py-16 text-center">
-          <Calendar className="mx-auto text-amber-200/40 mb-4" size={48} />
-          <p className="font-handwritten text-amber-100/60 text-xl">
+          <Calendar className="mx-auto mb-4 text-amber-200/40" size={48} />
+          <p className="text-xl font-handwritten text-amber-100/60">
             还没有活动报名
           </p>
         </div>
       )}
 
       {events.length > 0 && (
-        <div className="text-center mt-8">
+        <div className="mt-8 text-center">
           {!isReachingEnd ? (
             <button
               onClick={loadMore}
               disabled={isLoadingMore}
-              className="px-5 py-2 bg-amber-100/15 text-amber-100 rounded-full hover:bg-amber-100/25 transition-colors font-handwritten disabled:opacity-50"
+              className="rounded-full bg-amber-100/15 px-5 py-2 font-handwritten text-amber-100 transition-colors hover:bg-amber-100/25 disabled:opacity-50"
             >
               {isLoadingMore ? "加载中..." : "加载更多"}
             </button>
           ) : (
-            <p className="font-handwritten text-amber-200/50 text-sm">
+            <p className="text-sm font-handwritten text-amber-200/50">
               所有活动都在这里了
             </p>
           )}
         </div>
       )}
 
-      {portalTarget && createPortal(
-        <EventDetailModal
-          key={selectedEvent?.id ?? "event-detail"}
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-          onDelete={handleDeleteEvent}
-          onRsvp={toggleRsvp}
-          currentUserId={session?.user?.id}
-        />,
-        portalTarget
-      )}
+      {portalTarget &&
+        createPortal(
+          <EventDetailModal
+            key={selectedEvent?.id ?? "event-detail"}
+            event={selectedEvent}
+            onClose={() => setSelectedEvent(null)}
+            onDelete={handleDeleteEvent}
+            onRsvp={toggleRsvp}
+            currentUserId={session?.user?.id}
+          />,
+          portalTarget
+        )}
     </section>
   )
 }

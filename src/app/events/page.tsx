@@ -14,7 +14,6 @@ export default function EventsPage() {
   return (
     <>
       <ScrapbookBackdrop />
-
       <Navbar />
 
       <main

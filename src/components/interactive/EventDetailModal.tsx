@@ -18,17 +18,14 @@ interface EventDetailModalProps {
 async function readJsonArray<T>(res: Response, label: string): Promise<T[]> {
   const text = await res.text()
   if (!res.ok || !text.trim()) {
-    if (!res.ok) {
-      console.error(`Failed to load ${label}`, res.status, text)
-    }
     return []
   }
 
   try {
     const data = JSON.parse(text)
     return Array.isArray(data) ? data : []
-  } catch (error) {
-    console.error(`Invalid ${label} response`, error, text)
+  } catch {
+    console.error(`Invalid ${label} response`, text)
     return []
   }
 }
@@ -162,45 +159,53 @@ export function EventDetailModal({
 
   const canDelete = currentUserId && event.creator?.id === currentUserId
 
-  const commentTotal = comments.reduce(
-    (total, comment) => total + 1 + (comment.replies?.length ?? 0),
-    0
-  )
+  const countComments = (items: EventComment[]): number =>
+    items.reduce(
+      (total, comment) =>
+        total + 1 + countComments(comment.replies ?? []),
+      0
+    )
+
+  const commentTotal = countComments(comments)
 
   const renderComment = (comment: EventComment) => (
     <div key={comment.id} className="space-y-2">
       <div className="flex gap-3">
-        <div className="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 text-sm font-bold shrink-0">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-200 text-sm font-bold text-amber-800">
           {comment.user.name[0]}
         </div>
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-amber-800 text-sm">{comment.user.name}</span>
-            <span className="text-xs text-gray-400">{new Date(comment.createdAt).toLocaleDateString("zh-CN")}</span>
+            <span className="truncate font-medium text-sm text-amber-800">
+              {comment.user.name}
+            </span>
+            <span className="text-xs text-gray-400">
+              {new Date(comment.createdAt).toLocaleDateString("zh-CN")}
+            </span>
           </div>
-          <p className="text-amber-900 text-sm mt-0.5">{comment.content}</p>
+          <p className="mt-0.5 text-sm text-amber-900">{comment.content}</p>
           <button
             onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-            className="text-xs text-amber-600 hover:text-amber-800 mt-1"
+            className="mt-1 text-xs text-amber-600 hover:text-amber-800"
           >
             {replyingTo === comment.id ? "取消" : "回复"}
           </button>
           {replyingTo === comment.id && (
-            <div className="flex gap-2 mt-2">
+            <div className="mt-2 flex gap-2">
               <input
                 type="text"
                 value={nestedReplyText}
                 onChange={(e) => setNestedReplyText(e.target.value)}
                 placeholder={`回复 ${comment.user.name}...`}
                 disabled={!currentUserId || isSubmitting}
-                className="flex-1 px-3 py-1.5 border border-amber-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
+                className="min-w-0 flex-1 rounded-lg border border-amber-200 px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
                 maxLength={200}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit(comment.id)}
               />
               <button
                 onClick={() => handleSubmit(comment.id)}
                 disabled={!nestedReplyText.trim() || isSubmitting || !currentUserId}
-                className="px-3 py-1.5 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+                className="rounded-lg bg-amber-500 px-3 py-1.5 text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
               >
                 <Send size={14} />
               </button>
@@ -211,16 +216,20 @@ export function EventDetailModal({
       {comment.replies && comment.replies.length > 0 && (
         <div className="space-y-2">
           {comment.replies.map((reply) => (
-            <div key={reply.id} className="flex gap-3 ml-11">
-              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold shrink-0">
+            <div key={reply.id} className="ml-11 flex gap-3">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-100 text-xs font-bold text-amber-700">
                 {reply.user.name[0]}
               </div>
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-medium text-amber-800 text-sm">{reply.user.name}</span>
-                  <span className="text-xs text-gray-400">{new Date(reply.createdAt).toLocaleDateString("zh-CN")}</span>
+                  <span className="truncate font-medium text-sm text-amber-800">
+                    {reply.user.name}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(reply.createdAt).toLocaleDateString("zh-CN")}
+                  </span>
                 </div>
-                <p className="text-amber-900 text-sm mt-0.5">{reply.content}</p>
+                <p className="mt-0.5 text-sm text-amber-900">{reply.content}</p>
               </div>
             </div>
           ))}
@@ -235,17 +244,16 @@ export function EventDetailModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-3 backdrop-blur-sm md:p-4"
+        className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm sm:p-3 md:p-4"
         onClick={onClose}
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
-          className="flex max-h-[calc(100vh-1rem)] w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl bg-paper-white shadow-xl sm:max-w-2xl md:max-h-[85vh]"
+          className="flex max-h-[calc(100dvh-1rem)] w-full max-w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl bg-paper-white shadow-xl sm:max-w-2xl md:max-h-[85vh]"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           <div className="flex items-center justify-between border-b border-amber-200 p-3 md:p-4">
             <h2 className="truncate font-brush text-xl text-amber-800 md:text-2xl">
               {event.title}
@@ -255,7 +263,7 @@ export function EventDetailModal({
                 <button
                   onClick={handleDelete}
                   disabled={isDeleting}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50"
+                  className="rounded-full p-2 text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
                   title="删除"
                 >
                   <Trash2 size={18} />
@@ -263,14 +271,13 @@ export function EventDetailModal({
               )}
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="rounded-full p-1 hover:bg-gray-100 transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
           </div>
 
-          {/* Event info */}
           <div className="border-b border-amber-100 p-3 md:p-4">
             <div className="mb-2 flex flex-wrap items-center gap-3 text-amber-700 md:gap-4">
               <div className="flex items-center gap-1">
@@ -294,7 +301,7 @@ export function EventDetailModal({
                 {event.description}
               </p>
             )}
-            <div className="flex items-center justify-between mt-3">
+            <div className="mt-3 flex items-center justify-between">
               {event.creator && (
                 <p className="text-xs text-amber-600">
                   由 {event.creator.name} 创建
@@ -303,25 +310,18 @@ export function EventDetailModal({
               <button
                 onClick={handleRsvp}
                 disabled={isRsvping || !currentUserId}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-handwritten transition-colors disabled:opacity-50 ${
+                className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-handwritten transition-colors disabled:opacity-50 ${
                   attending
                     ? "bg-green-100 text-green-700 hover:bg-green-200"
                     : "bg-amber-100 text-amber-700 hover:bg-amber-200"
                 }`}
               >
-                {attending ? (
-                  <CheckCircle2 size={16} />
-                ) : (
-                  <Users size={16} />
-                )}
+                {attending ? <CheckCircle2 size={16} /> : <Users size={16} />}
                 {attending ? "已报名" : "我要参加"}
-                {attendeeCount > 0 && (
-                  <span className="ml-1 text-xs">({attendeeCount})</span>
-                )}
+                {attendeeCount > 0 && <span className="ml-1 text-xs">({attendeeCount})</span>}
               </button>
             </div>
 
-            {/* Attendee list toggle */}
             {attendeeCount > 0 && (
               <div className="mt-3">
                 <button
@@ -330,22 +330,24 @@ export function EventDetailModal({
                     setShowAttendees(next)
                     if (next && attendees.length === 0) fetchAttendees(event.id)
                   }}
-                  className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 transition-colors"
+                  className="flex items-center gap-1 text-xs text-amber-600 transition-colors hover:text-amber-800"
                 >
                   <Users size={13} />
-                  <span>{showAttendees ? "收起" : "查看报名名单"} ({attendeeCount} 人)</span>
+                  <span>
+                    {showAttendees ? "收起" : "查看报名名单"} ({attendeeCount} 人)
+                  </span>
                 </button>
                 {showAttendees && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {attendees.map((u) => (
                       <div
                         key={u.id}
-                        className="flex items-center gap-1 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5"
+                        className="flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5"
                       >
-                        <div className="w-5 h-5 rounded-full bg-amber-300 flex items-center justify-center text-amber-900 text-[10px] font-bold">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-300 text-[10px] font-bold text-amber-900">
                           {u.name[0]}
                         </div>
-                        <span className="text-xs text-amber-800 font-handwritten">{u.name}</span>
+                        <span className="font-handwritten text-xs text-amber-800">{u.name}</span>
                       </div>
                     ))}
                   </div>
@@ -354,23 +356,17 @@ export function EventDetailModal({
             )}
           </div>
 
-          {/* Comments */}
           <div className="flex-1 space-y-3 overflow-y-auto px-3 py-3 md:px-4">
-            <p className="text-sm text-amber-700 font-medium">
-              评论 ({commentTotal})
-            </p>
-            {isLoading && (
-              <p className="text-center text-gray-400 py-4">加载中...</p>
-            )}
+            <p className="text-sm font-medium text-amber-700">评论 ({commentTotal})</p>
+            {isLoading && <p className="py-4 text-center text-gray-400">加载中...</p>}
             {!isLoading && comments.length === 0 && (
-              <p className="text-center text-gray-400 py-4 font-handwritten">
+              <p className="py-4 text-center font-handwritten text-gray-400">
                 还没有评论，说点什么吧
               </p>
             )}
             {comments.map((comment) => renderComment(comment))}
           </div>
 
-          {/* Comment input */}
           <div className="flex gap-2 border-t border-amber-200 p-3 md:p-4">
             <input
               type="text"
@@ -378,14 +374,14 @@ export function EventDetailModal({
               onChange={(e) => setNewComment(e.target.value)}
               placeholder={currentUserId ? "写条评论..." : "请先登录后评论"}
               disabled={!currentUserId || isSubmitting}
-              className="flex-1 px-4 py-2 border border-amber-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
+              className="min-w-0 flex-1 rounded-lg border border-amber-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-amber-400 font-handwritten"
               maxLength={500}
               onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
             <button
               onClick={() => handleSubmit()}
               disabled={!newComment.trim() || isSubmitting || !currentUserId}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-amber-500 px-4 py-2 text-white hover:bg-amber-600 transition-colors disabled:opacity-50"
             >
               <Send size={16} />
             </button>

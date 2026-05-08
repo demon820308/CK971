@@ -15,7 +15,6 @@ export default function PhotosPage() {
   return (
     <>
       <ScrapbookBackdrop />
-
       <Navbar />
 
       <main

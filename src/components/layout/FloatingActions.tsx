@@ -22,7 +22,7 @@ export function FloatingActions({
   if (!session?.user) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 md:bottom-6 md:right-6">
+    <div className="fixed bottom-4 right-3 z-50 md:bottom-6 md:right-6">
       <AnimatePresence>
         {isOpen && (
           <motion.div

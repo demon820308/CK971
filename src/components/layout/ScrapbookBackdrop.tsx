@@ -26,20 +26,21 @@ export function ScrapbookBackdrop({
       />
 
       <div
-        className={`relative w-full aspect-[1682/2528] overflow-hidden md:hidden ${mobileClassName}`}
+        className={`fixed inset-0 -z-10 md:hidden ${mobileClassName}`}
         aria-hidden="true"
       >
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 bg-[#3a2518]"
           style={{
             backgroundImage: "url('/all.png')",
-            backgroundSize: "cover",
+            backgroundSize: "contain",
             backgroundPosition: "top center",
             backgroundRepeat: "no-repeat",
           }}
         />
-        {children}
       </div>
+
+      {children}
     </>
   )
 }
